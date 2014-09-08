@@ -22,8 +22,8 @@ class MPCweb():
         for line in data:
             res = regex.match(line)
             neo = (res.group(1), res.group(2), res.group(3), res.group(4),
-                  res.group(5), "", "", res.group(6), res.group(7), res.group(8),
-                  res.group(9), res.group(10), res.group(11))
+                  res.group(5), "", "", "", "", res.group(6), res.group(7), 
+                  res.group(8), res.group(9), res.group(10), res.group(11))
             neos.append(neo)
         return neos
 

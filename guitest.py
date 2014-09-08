@@ -11,9 +11,9 @@ import ttk
 import tkFont
 
 tree_columns = ("Tmp. Desig", "Score", "    Discovery    ", "    R.A.   ",
-                "    Decl.    ", "   Alt.   ", "   Az.   ", "    V    ",
-                "            Updated            ", "Note", "NObs", " Arc ",
-                "   H  ")
+                "    Decl.    ", "   Alt.   ", "   Az.   ", "   Angle   ", 
+                "   Rate   ", "    V    ", "            Updated            ",
+                 "Note", "NObs", " Arc ", "   H  ")
 
 mpc = MPCweb.MPCweb()
 
