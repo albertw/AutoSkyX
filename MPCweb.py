@@ -1,5 +1,4 @@
 import urllib2
-import neocp
 import re
 import pprint
 
@@ -22,19 +21,10 @@ class MPCweb():
         neos = []
         for line in data:
             res = regex.match(line)
-            tmpneo = neocp.neo()
-            tmpneo.tmpdesig = res.group(1)
-            tmpneo.score = res.group(2)
-            tmpneo.discovery = res.group(3)
-            tmpneo.ra = res.group(4)
-            tmpneo.dec = res.group(5)
-            tmpneo.v = res.group(6)
-            tmpneo.updated = res.group(7)
-            tmpneo.note = res.group(8)
-            tmpneo.observations = res.group(9)
-            tmpneo.arc = res.group(10)
-            tmpneo.h = res.group(11)
-            neos.append(tmpneo)
+            neo = (res.group(1), res.group(2), res.group(3), res.group(4),
+                  res.group(5), "", "", res.group(6), res.group(7), res.group(8),
+                  res.group(9), res.group(10), res.group(11))
+            neos.append(neo)
         return neos
 
 
