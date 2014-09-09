@@ -14,7 +14,7 @@ import pprint
 import SkyXDB
 
 tree_columns = ("Tmp. Desig", "Score", "    Discovery    ", "    R.A.   ",
-                "    Decl.    ", "   Alt.   ", "   Az.   ", "   Angle   ", 
+                "    Decl.    ", "   Alt.   ", "   Az.   ", "   Angle   ",
                 "   Rate   ", "    V    ", "            Updated            ",
                  "Note", "NObs", " Arc ", "   H  ")
 
@@ -25,7 +25,7 @@ def getNeocpHandler(*args):
     global neocplist
     for item in neocptree.get_children():
         neocptree.delete(item)
-    neocplist=mpc.getneocp()
+    neocplist = mpc.getneocp()
     for item in neocplist:
         neocptree.insert('', 'end', values=item.neolist())
     
@@ -46,32 +46,46 @@ def sortby(tree, col, descending):
 def deleteRowsHandler(*args):
     global neocplist
     for item in neocptree.selection():
-        tmpdesig=neocptree.item(item)['values'][0]
-        neocplist=([x for x in neocplist if x.tmpdesig!=tmpdesig])
+        tmpdesig = neocptree.item(item)['values'][0]
+        neocplist = ([x for x in neocplist if x.tmpdesig != tmpdesig])
         neocptree.delete(item)
         
 def gensmalldbHandler(*args):
     global neocplist
     smalldb = SkyXDB.genSmallDB(neocplist)
     filename = asksaveasfilename()
-    f = open(filename,'w')
+    f = open(filename, 'w')
     f.write(smalldb)
     f.close()
     # launch save dialog and write this to the rsultatnt file
     
+# Set up the root window
 root = Tk()
 root.option_add('*tearOff', FALSE)
 root.title("AutoSkyX")
 
-content = ttk.Frame(root)
+# Set up Notebook tabs
+n = ttk.Notebook(root)
+f1 = ttk.Frame(n)
+f1.grid(column=0, row=0, sticky=(N, S, E, W))
+f1.columnconfigure(0, weight=3)
+f1.rowconfigure(0, weight=3)
+f2 = ttk.Frame(n)
+f2.grid(column=0, row=0, sticky=(N, S, E, W))
+f2.columnconfigure(0, weight=3)
+f2.rowconfigure(0, weight=3)
+n.add(f1, text="NEOCPHelper")
+n.add(f2, text="AutoSkyX")
+content = ttk.Frame(f1)
+bcontainer = ttk.Frame(f1)
 
-menubar= Menu(content)
+# Add menubar
+menubar = Menu(root)
 menubar.add_cascade(label="File")
 menubar.add_cascade(label="Help")
 
 
 # Right Buttons
-bcontainer = ttk.Frame(root)
 getNeocp = ttk.Button(bcontainer, text="Get NEOCP", command=getNeocpHandler)
 saveSADB = ttk.Button(bcontainer, text="Save Small Asteroid db", command=gensmalldbHandler)
 updateskyx = ttk.Button(bcontainer, text="Update Alt/Az from skyx")
@@ -82,7 +96,7 @@ updateskyx.grid(column=0, row=2, sticky=(N, S, E, W))
 saveFO.grid(column=0, row=3, sticky=(N, S, E, W))
 
 # List
-neocptree = ttk.Treeview(content, columns=tree_columns, show="headings",displaycolumns=[0,2,3,4,5,6,7,9,11,12])
+neocptree = ttk.Treeview(content, columns=tree_columns, show="headings", displaycolumns=[0, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12])
 vsb = ttk.Scrollbar(orient="vertical", command=neocptree.yview)
 neocptree.configure(yscrollcommand=vsb.set)
 neocptree.grid(column=0, row=0, sticky='nsew', in_=content)
@@ -94,14 +108,14 @@ for col in tree_columns:
     neocptree.column(col, width=tkFont.Font().measure(col.title()) + 5)
 
 delrows = ttk.Button(content, text="Delete rows", command=deleteRowsHandler)
-
-# Placing
 delrows.grid(column=0, row=1, sticky=(E))
+
+n.grid(column=0, row=0, sticky=(N, S, E, W))
+n.grid_columnconfigure(0 , weight=1)
 
 content.grid(column=0, row=0, sticky=(N, S, E, W))
 content.grid_columnconfigure(0 , weight=1)
 bcontainer.grid(column=1, row=0, sticky=(N, S, E, W))
-
 neocptree.grid(column=0, row=0, sticky=(N, W, E, S))
 
 

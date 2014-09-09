@@ -60,7 +60,7 @@ class neo(object):
         self.arc,
         self.h]
     
-    def addorbitdata(self, H, G, Epoch, M, Peri, Node, Incl, e,n,a):
+    def addorbitdata(self, H, G, Epoch, M, Peri, Node, Incl, e, n, a):
         self.h=H
         self.g=G
         self.epoch=Epoch
