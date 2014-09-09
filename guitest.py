@@ -9,6 +9,8 @@ import MPCweb
 from Tkinter import *
 import ttk
 import tkFont
+import pprint
+import SkyXDB
 
 tree_columns = ("Tmp. Desig", "Score", "    Discovery    ", "    R.A.   ",
                 "    Decl.    ", "   Alt.   ", "   Az.   ", "   Angle   ", 
@@ -16,12 +18,15 @@ tree_columns = ("Tmp. Desig", "Score", "    Discovery    ", "    R.A.   ",
                  "Note", "NObs", " Arc ", "   H  ")
 
 mpc = MPCweb.MPCweb()
+neocplist = []
 
 def getNeocpHandler(*args):
+    global neocplist
     for item in neocptree.get_children():
         neocptree.delete(item)
-    for item in mpc.getneocp():
-        neocptree.insert('', 'end', values=item)
+    neocplist=mpc.getneocp()
+    for item in neocplist:
+        neocptree.insert('', 'end', values=item.neolist())
     
 def sortby(tree, col, descending):
     """Sort tree contents when a column is clicked on."""
@@ -38,16 +43,27 @@ def sortby(tree, col, descending):
         command=lambda col=col: sortby(tree, col, int(not descending)))
 
 def deleteRowsHandler(*args):
+    global neocplist
     for item in neocptree.selection():
+        tmpdesig=neocptree.item(item)['values'][0]
+        neocplist=([x for x in neocplist if x.tmpdesig!=tmpdesig])
         neocptree.delete(item)
-
+        
+def gensmalldbHandler(*args):
+    global neocplist
+    smalldb = SkyXDB.genSmallDB(neocplist)
+    f = open("smalldb.txt",'w')
+    f.write(smalldb)
+    f.close()
+    # launch save dialog and write this to the rsultatnt file
+    
 root = Tk()
 content = ttk.Frame(root)
 
 # Right Buttons
 bcontainer = ttk.Frame(root)
 getNeocp = ttk.Button(bcontainer, text="Get NEOCP", command=getNeocpHandler)
-saveSADB = ttk.Button(bcontainer, text="Save Small Asteroid db")
+saveSADB = ttk.Button(bcontainer, text="Save Small Asteroid db", command=gensmalldbHandler)
 updateskyx = ttk.Button(bcontainer, text="Update Alt/Az from skyx")
 saveFO = ttk.Button(bcontainer, text="Save in findorb format")
 getNeocp.grid(column=0, row=0, sticky=(N, S, E, W))
@@ -56,7 +72,7 @@ updateskyx.grid(column=0, row=2, sticky=(N, S, E, W))
 saveFO.grid(column=0, row=3, sticky=(N, S, E, W))
 
 # List
-neocptree = ttk.Treeview(content, columns=tree_columns, show="headings")
+neocptree = ttk.Treeview(content, columns=tree_columns, show="headings",displaycolumns=[0,2,3,4,5,6,7,9,11,12])
 vsb = ttk.Scrollbar(orient="vertical", command=neocptree.yview)
 neocptree.configure(yscrollcommand=vsb.set)
 neocptree.grid(column=0, row=0, sticky='nsew', in_=content)
