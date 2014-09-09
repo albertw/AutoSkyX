@@ -46,7 +46,6 @@ def unpackEpoch(packed):
     month = hash[matches.group(3)]
     day = hash[matches.group(4)] 
     datestr= year +" " + month + " " + day + ".000"
-    print datestr
     return datestr
     
 def genSmallDB(neocplist):

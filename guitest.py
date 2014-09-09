@@ -7,6 +7,7 @@
 
 import MPCweb
 from Tkinter import *
+from tkFileDialog import *
 import ttk
 import tkFont
 import pprint
@@ -52,7 +53,8 @@ def deleteRowsHandler(*args):
 def gensmalldbHandler(*args):
     global neocplist
     smalldb = SkyXDB.genSmallDB(neocplist)
-    f = open("smalldb.txt",'w')
+    filename = asksaveasfilename()
+    f = open(filename,'w')
     f.write(smalldb)
     f.close()
     # launch save dialog and write this to the rsultatnt file
