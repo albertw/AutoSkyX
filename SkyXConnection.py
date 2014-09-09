@@ -49,12 +49,18 @@ class SkyXConnection():
                             "\\nsk6ObjInfoProp_AZM:"+String(Target58)+
                             "\\nsk6ObjInfoProp_ALT:"+String(Target59)+
                             "\\nsk6ObjInfoProp_RA_RATE_ASPERSEC:"+String(Target77)+
-                            "\\nsk6ObjInfoProp_DEC_RATE_ASPERSEC:"+String(Target78);
+                            "\\nsk6ObjInfoProp_DEC_RATE_ASPERSEC:"+String(Target78)+"\\n";
 
                 }
                 """
-
-        print (self.send(command))
+        results={}
+        op=self.send(command)
+        for line in op.splitlines():
+            if ":" in line:
+                info=line.split(":")[0]
+                val=line.split(":")[1]
+                results[info]=val
+        return (results)
         
                 
     def test1(self):
@@ -85,6 +91,6 @@ for (p=0;p<PropCnt;++p)
 
 if __name__ == "__main__":
     x = SkyXConnection()
-    x.sky6ObjectInformation("Saturn")
+    print x.sky6ObjectInformation("Saturn")
 
     

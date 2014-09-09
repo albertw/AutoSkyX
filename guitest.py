@@ -11,6 +11,7 @@ import ttk
 
 import MPCweb
 import SkyXDB
+import SkyXConnection
 
 tree_columns = ("Tmp. Desig", "Score", "    Discovery    ", "    R.A.   ",
                 "    Decl.    ", "   Alt.   ", "   Az.   ", "   Angle   ",
@@ -57,6 +58,25 @@ def gensmalldbHandler(*args):
     f.write(smalldb)
     f.close()
     
+def updatefromskyxHandler(*args):
+    global neocplist
+    # I dont like this really. should probably be more like:
+    # target.updateskyxinfo() - let the class do the work.
+    skyx = SkyXConnection.SkyXConnection()
+    for target in neocplist:
+        skyxinfo=skyx.sky6ObjectInformation(target.tmpdesig)
+        target.az=skyxinfo['sk6ObjInfoProp_AZM']
+        target.alt=skyxinfo['sk6ObjInfoProp_ALT']
+        target.ra=skyxinfo['sk6ObjInfoProp_RA_2000']
+        target.dec=skyxinfo['sk6ObjInfoProp_DEC_2000']
+    # Repopulate the tree
+    for item in neocptree.get_children():
+        neocptree.delete(item)
+    for item in neocplist:
+        neocptree.insert('', 'end', values=item.neolist())
+        
+    
+    
 # Set up the root window
 root = Tk()
 root.option_add('*tearOff', FALSE)
@@ -99,7 +119,7 @@ asx.grid(column=0, row=0)
 # Right Buttons
 getNeocp = ttk.Button(bcontainer, text="Get NEOCP", command=getNeocpHandler)
 saveSADB = ttk.Button(bcontainer, text="Save Small Asteroid db", command=gensmalldbHandler)
-updateskyx = ttk.Button(bcontainer, text="Update Alt/Az from skyx")
+updateskyx = ttk.Button(bcontainer, text="Update Alt/Az from skyx", command=updatefromskyxHandler)
 saveFO = ttk.Button(bcontainer, text="Save in findorb format")
 helpertext1 = "Click on the 'Get NEOCP' button to populate the table. Then delete unwanted rows. Next save in skyx format and load in skyx.  You can then update the Alt/Az, Rate and angle information from the skyx."
 helptxt = ttk.Label(bcontainer, text=helpertext1, wraplength=170, anchor=W, justify=LEFT)
