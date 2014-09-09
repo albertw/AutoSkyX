@@ -60,7 +60,15 @@ def gensmalldbHandler(*args):
     # launch save dialog and write this to the rsultatnt file
     
 root = Tk()
+root.option_add('*tearOff', FALSE)
+root.title("AutoSkyX")
+
 content = ttk.Frame(root)
+
+menubar= Menu(content)
+menubar.add_cascade(label="File")
+menubar.add_cascade(label="Help")
+
 
 # Right Buttons
 bcontainer = ttk.Frame(root)
@@ -102,5 +110,6 @@ root.rowconfigure(0, weight=1)
 
 content.columnconfigure(0, weight=3)
 content.rowconfigure(0, weight=3)
+root.config(menu=menubar)
 
 root.mainloop()
