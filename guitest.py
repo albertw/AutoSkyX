@@ -4,13 +4,12 @@
 # To change this template file, choose Tools | Templates
 # and open the template in the editor.
 
-
-import MPCweb
 from Tkinter import *
 from tkFileDialog import *
-import ttk
 import tkFont
-import pprint
+import ttk
+
+import MPCweb
 import SkyXDB
 
 tree_columns = ("Tmp. Desig", "Score", "    Discovery    ", "    R.A.   ",
@@ -57,7 +56,6 @@ def gensmalldbHandler(*args):
     f = open(filename, 'w')
     f.write(smalldb)
     f.close()
-    # launch save dialog and write this to the rsultatnt file
     
 # Set up the root window
 root = Tk()
@@ -79,21 +77,38 @@ n.add(f2, text="AutoSkyX")
 content = ttk.Frame(f1)
 bcontainer = ttk.Frame(f1)
 
+content.grid(column=0, row=0, sticky=(N, S, E, W))
+content.grid_columnconfigure(0 , weight=1)
+content.columnconfigure(0, weight=3)
+content.rowconfigure(0, weight=3)
+
+bcontainer.grid(column=1, row=0, sticky=(N, S, E, W))
+
+
 # Add menubar
 menubar = Menu(root)
 menubar.add_cascade(label="File")
 menubar.add_cascade(label="Help")
 
+# Placeholder text for autoskyxtab
+autoskyxcontainer = ttk.Frame(f2)
+autoskyxcontainer.grid(column=0, row=0)
+asx = ttk.Label(autoskyxcontainer, text="Not yet implemented")
+asx.grid(column=0, row=0)
 
 # Right Buttons
 getNeocp = ttk.Button(bcontainer, text="Get NEOCP", command=getNeocpHandler)
 saveSADB = ttk.Button(bcontainer, text="Save Small Asteroid db", command=gensmalldbHandler)
 updateskyx = ttk.Button(bcontainer, text="Update Alt/Az from skyx")
 saveFO = ttk.Button(bcontainer, text="Save in findorb format")
+helpertext1 = "Click on the 'Get NEOCP' button to populate the table. Then delete unwanted rows. Next save in skyx format and load in skyx.  You can then update the Alt/Az, Rate and angle information from the skyx."
+helptxt = ttk.Label(bcontainer, text=helpertext1, wraplength=170, anchor=W, justify=LEFT)
+
 getNeocp.grid(column=0, row=0, sticky=(N, S, E, W))
 saveSADB.grid(column=0, row=1, sticky=(N, S, E, W))
 updateskyx.grid(column=0, row=2, sticky=(N, S, E, W))
 saveFO.grid(column=0, row=3, sticky=(N, S, E, W))
+helptxt.grid(column=0, row=4, sticky=(N, S, E, W), ipady=20, padx=10)
 
 # List
 neocptree = ttk.Treeview(content, columns=tree_columns, show="headings", displaycolumns=[0, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12])
@@ -101,7 +116,6 @@ vsb = ttk.Scrollbar(orient="vertical", command=neocptree.yview)
 neocptree.configure(yscrollcommand=vsb.set)
 neocptree.grid(column=0, row=0, sticky='nsew', in_=content)
 vsb.grid(column=1, row=0, sticky='ns', in_=content)
-        
 # data is fixed width so just do it for the headings that we've already spaced out
 for col in tree_columns:
     neocptree.heading(col, text=col.title(), command=lambda c=col: sortby(neocptree, c, 0))
@@ -113,17 +127,10 @@ delrows.grid(column=0, row=1, sticky=(E))
 n.grid(column=0, row=0, sticky=(N, S, E, W))
 n.grid_columnconfigure(0 , weight=1)
 
-content.grid(column=0, row=0, sticky=(N, S, E, W))
-content.grid_columnconfigure(0 , weight=1)
-bcontainer.grid(column=1, row=0, sticky=(N, S, E, W))
 neocptree.grid(column=0, row=0, sticky=(N, W, E, S))
-
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
-
-content.columnconfigure(0, weight=3)
-content.rowconfigure(0, weight=3)
 root.config(menu=menubar)
 
 root.mainloop()
