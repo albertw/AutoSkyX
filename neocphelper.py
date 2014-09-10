@@ -10,6 +10,7 @@ import tkFont
 import ttk
 import urllib2
 import tkMessageBox
+import findorb
 
 import MPCweb
 import SkyXDB
@@ -41,7 +42,7 @@ class neocp():
         getNeocp = ttk.Button(self.bcontainer, text="Get NEOCP", command=self.getNeocpHandler)
         saveSADB = ttk.Button(self.bcontainer, text="Save Small Asteroid db",command=self.gensmalldbHandler)
         updateskyx = ttk.Button(self.bcontainer, text="Update Alt/Az from skyx",command=self.updatefromskyxHandler)
-        saveFO = ttk.Button(self.bcontainer, text="Save in findorb format")
+        saveFO = ttk.Button(self.bcontainer, text="Save in findorb format",command=self.genfodbHandler)
         helpertext1 = "Click on the 'Get NEOCP' button to populate the table. Then delete unwanted rows. Next save in skyx format and load in skyx.  You can then update the Alt/Az, Rate and angle information from the skyx."
         helptxt = ttk.Label(self.bcontainer, text=helpertext1, wraplength=170, anchor=W, justify=LEFT)
         
@@ -100,12 +101,25 @@ class neocp():
             self.neocptree.delete(item)
             
     def gensmalldbHandler(self, *args):
-        smalldb = SkyXDB.genSmallDB(self.neocplist)
-        filename = asksaveasfilename()
-        f = open(filename, 'w')
-        f.write(smalldb)
-        f.close()
+        try:
+            smalldb = SkyXDB.genSmallDB(self.neocplist)
+            filename = asksaveasfilename()
+            f = open(filename, 'w')
+            f.write(smalldb)
+            f.close()
+        except urllib2.URLError, e:
+            tkMessageBox.showinfo("MPC Error", "Can't get orbit data:\n" + str(e) + "\n Check you are online.")
         
+    def genfodbHandler(self, *args):
+        try:
+            db = findorb.genfindorb(self.neocplist)
+            filename = asksaveasfilename()
+            f = open(filename, 'w')
+            f.write(db)
+            f.close()
+        except urllib2.URLError, e:
+            tkMessageBox.showinfo("MPC Error", "Can't get observations data:\n" + str(e) + "\n Check you are online.")
+            
     def updatefromskyxHandler(self, *args):
         for target in self.neocplist:
             target.updateskyxinfo()
