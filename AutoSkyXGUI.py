@@ -4,7 +4,7 @@ from tkFileDialog import *
 import ttk
 
 import neocphelper
-
+import imagescheduler
 
     
 # Set up the root window
@@ -25,13 +25,8 @@ f2.rowconfigure(0, weight=3)
 n.add(f1, text="NEOCPHelper")
 n.add(f2, text="AutoSkyX")
 
-neocphelperframe=neocphelper.neocp(f1)
-
-# Placeholder text for autoskyxtab
-autoskyxcontainer = ttk.Frame(f2)
-autoskyxcontainer.grid(column=0, row=0)
-asx = ttk.Label(autoskyxcontainer, text="Not yet implemented")
-asx.grid(column=0, row=0)
+neos=neocphelper.neocp(f1)
+isframe=imagescheduler.imagescheduler(f2,neos)
 
 # Add menubar
 menubar = Menu(root)
