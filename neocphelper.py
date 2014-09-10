@@ -8,6 +8,8 @@ from Tkinter import *
 from tkFileDialog import *
 import tkFont
 import ttk
+import urllib2
+import tkMessageBox
 
 import MPCweb
 import SkyXDB
@@ -67,11 +69,15 @@ class neocp():
 
     
     def getNeocpHandler(self,*args):
-        for item in self.neocptree.get_children():
-            self.neocptree.delete(item)
-        self.neocplist = self.mpc.getneocp()
-        for item in self.neocplist:
-            self.neocptree.insert('', 'end', values=item.neolist())
+        try:
+            self.neocplist = self.mpc.getneocp()
+            for item in self.neocptree.get_children():
+                self.neocptree.delete(item)
+            for item in self.neocplist:
+                self.neocptree.insert('', 'end', values=item.neolist())
+        except urllib2.URLError, e:
+            tkMessageBox.showinfo("NEOCP Error", "Can't get NEOCP data:\n" + str(e) + "\n Check you are online.")
+
 
     def sortby(self, tree, col, descending):
         """Sort tree contents when a column is clicked on."""
