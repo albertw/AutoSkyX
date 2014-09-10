@@ -10,10 +10,8 @@ import tkFont
 import ttk
 import urllib2
 import tkMessageBox
-import findorb
 
 import MPCweb
-import SkyXDB
 
 class neocp():
     
@@ -24,7 +22,6 @@ class neocp():
                 "   Rate   ", "    V    ", "            Updated            ",
                  "Note", "NObs", " Arc ", "   H  ")
 
-        self.mpc = MPCweb.MPCweb()
         self.neocplist = []
         
         self.content = ttk.Frame(self.frame)
@@ -71,7 +68,8 @@ class neocp():
     
     def getNeocpHandler(self,*args):
         try:
-            self.neocplist = self.mpc.getneocp()
+            mpc = MPCweb.MPCweb()
+            self.neocplist = mpc.getneocp()
             for item in self.neocptree.get_children():
                 self.neocptree.delete(item)
             for item in self.neocplist:
@@ -102,7 +100,8 @@ class neocp():
             
     def gensmalldbHandler(self, *args):
         try:
-            smalldb = SkyXDB.genSmallDB(self.neocplist)
+            mpc = MPCweb.MPCweb()
+            smalldb = mpc.genSmallDB(self.neocplist)
             filename = asksaveasfilename()
             f = open(filename, 'w')
             f.write(smalldb)
@@ -112,7 +111,8 @@ class neocp():
         
     def genfodbHandler(self, *args):
         try:
-            db = findorb.genfindorb(self.neocplist)
+            mpc = MPCweb.MPCweb()
+            db = mpc.genfindorb(self.neocplist)
             filename = asksaveasfilename()
             f = open(filename, 'w')
             f.write(db)
