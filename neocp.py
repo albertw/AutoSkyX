@@ -3,7 +3,9 @@ Created on 9 Sep 2014
 
 @author: Albert
 '''
-from compiler.ast import Node
+import SkyXConnection
+import math
+from multiprocessing.connection import answer_challenge
 
 class neo(object):
     '''
@@ -42,6 +44,8 @@ class neo(object):
         self.e=""
         self.n=""
         self.a=""
+        self.rarate=""
+        self.decrate=""
         
     def neolist(self):
         return [self.tmpdesig,
@@ -73,4 +77,53 @@ class neo(object):
         self.a=a
         
         
+    def updateskyxinfo(self):
+        skyx = SkyXConnection.SkyXConnection()
+        skyxinfo=skyx.sky6ObjectInformation(self.tmpdesig)
+        self.az=round(float(skyxinfo['sk6ObjInfoProp_AZM']),2)
+        self.alt=round(float(skyxinfo['sk6ObjInfoProp_ALT']),2)
+        self.ra=skyxinfo['sk6ObjInfoProp_RA_2000']
+        self.dec=skyxinfo['sk6ObjInfoProp_DEC_2000']
+        self.rarate=skyxinfo['sk6ObjInfoProp_RA_RATE_ASPERSEC']
+        self.decrate=skyxinfo['sk6ObjInfoProp_DEC_RATE_ASPERSEC']
+        self.rate=self.getRate()
+        self.angle=self.getPa()
         
+    def getRate(self):
+        '''
+        Based on 'Practical Astronomy with your calculator' (Duffet-Smith 1988) 
+        p51, but it's just a cosine rule of spherical trig. Simply 
+        sqrt(ra^2+dec^2) wont work, you need spherical trig not planar!
+        '''
+        if self.rarate:
+            rarateR=math.radians(float(self.rarate))
+            dec1R = math.radians(float(self.dec))
+            dec2R = math.radians(float(self.decrate) + float(self.dec ))
+            result = math.degrees(
+                     math.acos(
+                        math.sin(dec1R) * math.sin(dec2R) + math.cos(dec1R) * math.cos(dec2R) * math.cos(rarateR)     
+                               )                
+                                  )
+            return round((((result * 60) * 100.0) / 100.0),2)
+        
+    def getPa(self):
+        ''' Basically :
+        Sin(A)/Sin(a)=Sin(C)/sin(c)
+        '''
+        if self.rarate:            
+            
+            aa = math.radians(90 - (float(self.dec) + float(self.decrate)))
+            C = math.radians(float(self.rarate))
+            c = math.radians(float(self.rate)/60)
+            print float(self.rarate)
+            print float(self.rate)
+            print aa
+            print C
+            print c
+            ans = math.degrees(math.asin(
+                       math.sin(C) * math.sin(aa) / math.sin(c)                  
+                       ))
+            if ans < 0:
+                ans = 360 + ans
+            return round(ans,2)
+            

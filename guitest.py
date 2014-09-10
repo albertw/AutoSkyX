@@ -60,15 +60,8 @@ def gensmalldbHandler(*args):
     
 def updatefromskyxHandler(*args):
     global neocplist
-    # I dont like this really. should probably be more like:
-    # target.updateskyxinfo() - let the class do the work.
-    skyx = SkyXConnection.SkyXConnection()
     for target in neocplist:
-        skyxinfo=skyx.sky6ObjectInformation(target.tmpdesig)
-        target.az=skyxinfo['sk6ObjInfoProp_AZM']
-        target.alt=skyxinfo['sk6ObjInfoProp_ALT']
-        target.ra=skyxinfo['sk6ObjInfoProp_RA_2000']
-        target.dec=skyxinfo['sk6ObjInfoProp_DEC_2000']
+        target.updateskyxinfo()
     # Repopulate the tree
     for item in neocptree.get_children():
         neocptree.delete(item)
@@ -131,7 +124,7 @@ saveFO.grid(column=0, row=3, sticky=(N, S, E, W))
 helptxt.grid(column=0, row=4, sticky=(N, S, E, W), ipady=20, padx=10)
 
 # List
-neocptree = ttk.Treeview(content, columns=tree_columns, show="headings", displaycolumns=[0, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12])
+neocptree = ttk.Treeview(content, columns=tree_columns, show="headings", displaycolumns=[0, 10, 3, 4, 5, 6, 7, 8, 9, 11, 12])
 vsb = ttk.Scrollbar(orient="vertical", command=neocptree.yview)
 neocptree.configure(yscrollcommand=vsb.set)
 neocptree.grid(column=0, row=0, sticky='nsew', in_=content)

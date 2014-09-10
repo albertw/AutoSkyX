@@ -17,7 +17,7 @@ class MPCweb():
     def getneocp(self):
         data = urllib2.urlopen(self.neocp)
         regex = re.compile("^(.{7}) (.{3}) "
-                    + "(.{12}) (.{8}) (.{8}) (.{4}) (.{21})  (.{7}) "
+                    + "(.{12}) (.{8}) (.{8}) (.{4}) (.{22}) (.{7}) "
                     + "(.{3})  (.{5}) (.{4})")
         neos = []
         for line in data:
