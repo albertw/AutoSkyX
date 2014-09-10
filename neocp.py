@@ -115,11 +115,6 @@ class neo(object):
             aa = math.radians(90 - (float(self.dec) + float(self.decrate)))
             C = math.radians(float(self.rarate))
             c = math.radians(float(self.rate)/60)
-            print float(self.rarate)
-            print float(self.rate)
-            print aa
-            print C
-            print c
             ans = math.degrees(math.asin(
                        math.sin(C) * math.sin(aa) / math.sin(c)                  
                        ))
