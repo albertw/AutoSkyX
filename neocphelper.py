@@ -11,7 +11,6 @@ import ttk
 
 import MPCweb
 import SkyXDB
-import SkyXConnection
 
 class neocp():
     
@@ -89,7 +88,6 @@ class neocp():
             command=lambda col=col: self.sortby(tree, col, int(not descending)))
     
     def deleteRowsHandler(self, *args):
-        print self.neocplist
         for item in self.neocptree.selection():
             tmpdesig = self.neocptree.item(item)['values'][0]
             self.neocplist = ([x for x in self.neocplist if x.tmpdesig != tmpdesig])

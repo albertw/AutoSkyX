@@ -5,7 +5,7 @@ Created on 9 Sep 2014
 '''
 import SkyXConnection
 import math
-from multiprocessing.connection import answer_challenge
+import datetime
 
 class neo(object):
     '''
@@ -82,12 +82,13 @@ class neo(object):
         skyxinfo=skyx.sky6ObjectInformation(self.tmpdesig)
         self.az=round(float(skyxinfo['sk6ObjInfoProp_AZM']),2)
         self.alt=round(float(skyxinfo['sk6ObjInfoProp_ALT']),2)
-        self.ra=skyxinfo['sk6ObjInfoProp_RA_2000']
-        self.dec=skyxinfo['sk6ObjInfoProp_DEC_2000']
+        self.ra=round(float(skyxinfo['sk6ObjInfoProp_RA_2000']),3)
+        self.dec=round(float(skyxinfo['sk6ObjInfoProp_DEC_2000']),3)
         self.rarate=skyxinfo['sk6ObjInfoProp_RA_RATE_ASPERSEC']
         self.decrate=skyxinfo['sk6ObjInfoProp_DEC_RATE_ASPERSEC']
         self.rate=self.getRate()
         self.angle=self.getPa()
+        self.updated=datetime.datetime.now().strftime("From SkyX %b %d %H:%M %Z")
         
     def getRate(self):
         '''

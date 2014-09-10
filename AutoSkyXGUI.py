@@ -1,12 +1,8 @@
 
 from Tkinter import *
 from tkFileDialog import *
-import tkFont
 import ttk
 
-import MPCweb
-import SkyXDB
-import SkyXConnection
 import neocphelper
 
 
