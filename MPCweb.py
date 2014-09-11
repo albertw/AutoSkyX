@@ -5,7 +5,8 @@ import neocp
 
 class MPCweb():
     
-    def __init__(self, pcp="http://www.minorplanetcenter.net/iau/NEO/pccp.txt", neocp="http://www.minorplanetcenter.net/iau/NEO/neocp.txt"):
+    def __init__(self, pcp="http://www.minorplanetcenter.net/iau/NEO/pccp.txt", 
+                 neocp="http://www.minorplanetcenter.net/iau/NEO/neocp.txt"):
         self.pcp = pcp
         self.neocp = neocp
         
@@ -22,9 +23,10 @@ class MPCweb():
         neos = []
         for line in data:
             res = regex.match(line)
-            neo=neocp.neo(res.group(1), res.group(2), res.group(3), res.group(4),
-                  res.group(5), res.group(6), res.group(7), 
-                  res.group(8), res.group(9), res.group(10), res.group(11))
+            neo=neocp.neo(res.group(1), res.group(2), res.group(3), 
+                          res.group(4), res.group(5), res.group(6), 
+                          res.group(7), res.group(8), res.group(9), 
+                          res.group(10), res.group(11))
             neos.append(neo)
         return neos
 
@@ -42,9 +44,6 @@ class MPCweb():
     
     
     def unpackEpoch(self, packed):
-        year = "0000"
-        month = "00"
-        day = "00"
         ehash = {'1':'01',
               '2':'02',
               '3':'03',
@@ -95,10 +94,16 @@ class MPCweb():
             for line in data:
                 if "NEOCPNomin" in line:
                     values = line.split()
-                    item.addorbitdata(values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10])
+                    item.addorbitdata(values[1], values[2], values[3], 
+                                      values[4], values[5], values[6], 
+                                      values[7], values[8], values[9], 
+                                      values[10])
                     dbline = "  %-19.19s|%-14.14s|%8.6f  |%8f|%8.4f|%8.4f |%8.4f| 2000|%9.4f  |%5.2f|%-5.2f|   0.00\n" % (
-                              values[0], self.unpackEpoch(values[3]), float(values[8]), float(values[10]),
-                              float(values[7]), float(values[6]), float(values[5]), float(values[4]), float(values[1]), float(values[2]))
+                              values[0], self.unpackEpoch(values[3]), 
+                              float(values[8]), float(values[10]), 
+                              float(values[7]), float(values[6]), 
+                              float(values[5]), float(values[4]), 
+                              float(values[1]), float(values[2]))
                     smalldb = smalldb + dbline
         return smalldb
     

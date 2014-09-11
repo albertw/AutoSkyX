@@ -37,9 +37,9 @@ class neocp():
         
         # Right Buttons
         getNeocp = ttk.Button(self.bcontainer, text="Get NEOCP", command=self.getNeocpHandler)
-        saveSADB = ttk.Button(self.bcontainer, text="Save Small Asteroid db",command=self.gensmalldbHandler)
-        updateskyx = ttk.Button(self.bcontainer, text="Update Alt/Az from skyx",command=self.updatefromskyxHandler)
-        saveFO = ttk.Button(self.bcontainer, text="Save in findorb format",command=self.genfodbHandler)
+        saveSADB = ttk.Button(self.bcontainer, text="Save Small Asteroid db", command=self.gensmalldbHandler)
+        updateskyx = ttk.Button(self.bcontainer, text="Update Alt/Az from skyx", command=self.updatefromskyxHandler)
+        saveFO = ttk.Button(self.bcontainer, text="Save in findorb format", command=self.genfodbHandler)
         helpertext1 = "Click on the 'Get NEOCP' button to populate the table. Then delete unwanted rows. Next save in skyx format and load in skyx.  You can then update the Alt/Az, Rate and angle information from the skyx."
         helptxt = ttk.Label(self.bcontainer, text=helpertext1, wraplength=170, anchor=W, justify=LEFT)
         
@@ -50,7 +50,9 @@ class neocp():
         helptxt.grid(column=0, row=4, sticky=(N, S, E, W), ipady=20, padx=10)
         
         # List
-        self.neocptree = ttk.Treeview(self.content, columns=self.tree_columns, show="headings", displaycolumns=[0, 10, 3, 4, 5, 6, 7, 8, 9, 11, 12])
+        self.neocptree = ttk.Treeview(self.content, columns=self.tree_columns, 
+                            show="headings",
+                            displaycolumns=[0, 10, 3, 4, 5, 6, 7, 8, 9, 11, 12])
         vsb = ttk.Scrollbar(orient="vertical", command=self.neocptree.yview)
         self.neocptree.configure(yscrollcommand=vsb.set)
         self.neocptree.grid(column=0, row=0, sticky='nsew', in_=self.content)
@@ -60,13 +62,14 @@ class neocp():
             self.neocptree.heading(col, text=col.title(), command=lambda c=col: self.sortby(self.neocptree, c, 0))
             self.neocptree.column(col, width=tkFont.Font().measure(col.title()) + 5)
         
-        delrows = ttk.Button(self.content, text="Delete rows",command=self.deleteRowsHandler)
+        delrows = ttk.Button(self.content, text="Delete rows", 
+                             command=self.deleteRowsHandler)
         delrows.grid(column=0, row=1, sticky=(E))
         
         self.neocptree.grid(column=0, row=0, sticky=(N, W, E, S))
 
     
-    def getNeocpHandler(self,*args):
+    def getNeocpHandler(self, *args):
         try:
             mpc = MPCweb.MPCweb()
             self.neocplist = mpc.getneocp()
@@ -75,7 +78,8 @@ class neocp():
             for item in self.neocplist:
                 self.neocptree.insert('', 'end', values=item.neolist())
         except urllib2.URLError, e:
-            tkMessageBox.showinfo("NEOCP Error", "Can't get NEOCP data:\n" + str(e) + "\n Check you are online.")
+            tkMessageBox.showinfo("NEOCP Error", "Can't get NEOCP data:\n" + 
+                                  str(e) + "\n Check you are online.")
 
 
     def sortby(self, tree, col, descending):
@@ -107,7 +111,8 @@ class neocp():
             f.write(smalldb)
             f.close()
         except urllib2.URLError, e:
-            tkMessageBox.showinfo("MPC Error", "Can't get orbit data:\n" + str(e) + "\n Check you are online.")
+            tkMessageBox.showinfo("MPC Error", "Can't get orbit data:\n" + 
+                                  str(e) + "\n Check you are online.")
         
     def genfodbHandler(self, *args):
         try:
@@ -118,7 +123,9 @@ class neocp():
             f.write(db)
             f.close()
         except urllib2.URLError, e:
-            tkMessageBox.showinfo("MPC Error", "Can't get observations data:\n" + str(e) + "\n Check you are online.")
+            tkMessageBox.showinfo("MPC Error", 
+                                  "Can't get observations data:\n" + str(e) 
+                                  + "\n Check you are online.")
             
     def updatefromskyxHandler(self, *args):
         for target in self.neocplist:

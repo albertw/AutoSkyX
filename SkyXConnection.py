@@ -1,5 +1,17 @@
 from socket import *
 
+class SkyxObjectNotFoundError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+    
+class SkyxConnectionError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+    
 class SkyXConnection():
       
     def __init__(self, host="localhost", port=3040):
@@ -7,14 +19,17 @@ class SkyXConnection():
         self.port = port
         
     def send(self, command):
-        sockobj = socket(AF_INET, SOCK_STREAM)
-        sockobj.connect((self.host, self.port))
-        sockobj.send(bytes("/* Java Script */\n" + command))
-        op = sockobj.recv(2048)    
-        sockobj.shutdown(SHUT_RDWR)  
-        sockobj.close()
-        return op
-        
+        try:
+            sockobj = socket(AF_INET, SOCK_STREAM)
+            sockobj.connect((self.host, self.port))
+            sockobj.send(bytes("/* Java Script */\n" + command))
+            op = sockobj.recv(2048)    
+            sockobj.shutdown(SHUT_RDWR)  
+            sockobj.close()
+            return op
+        except error as msg:
+            raise SkyxConnectionError(msg)
+                
     def sky6ObjectInformation(self, target):
         command = """
                 var Target = \"""" + target + """\"; 
@@ -53,13 +68,15 @@ class SkyXConnection():
 
                 }
                 """
-        results={}
-        op=self.send(command)
+        results = {}
+        op = self.send(command)
         for line in op.splitlines():
+            if "Object not found" in line:
+                raise SkyxObjectNotFoundError("Object not found.")
             if ":" in line:
-                info=line.split(":")[0]
-                val=line.split(":")[1]
-                results[info]=val
+                info = line.split(":")[0]
+                val = line.split(":")[1]
+                results[info] = val
         return (results)
         
                 

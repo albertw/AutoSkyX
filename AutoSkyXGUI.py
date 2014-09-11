@@ -25,8 +25,8 @@ f2.rowconfigure(0, weight=3)
 n.add(f1, text="NEOCPHelper")
 n.add(f2, text="AutoSkyX")
 
-neos=neocphelper.neocp(f1)
-isframe=imagescheduler.imagescheduler(f2,neos)
+neos = neocphelper.neocp(f1)
+isframe = imagescheduler.imagescheduler(f2, neos)
 
 # Add menubar
 menubar = Menu(root)
@@ -35,7 +35,6 @@ menubar.add_cascade(label="Help")
 
 n.grid(column=0, row=0, sticky=(N, S, E, W))
 n.grid_columnconfigure(0 , weight=1)
-
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
