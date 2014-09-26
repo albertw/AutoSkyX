@@ -30,6 +30,49 @@ class SkyXConnection():
         except error as msg:
             raise SkyxConnectionError(msg)
                 
+    def closedloopslew(self,target):
+        # 0 on success
+        command = '''
+            sky6StarChart.Find("''' + target + '''");
+            ClosedLoopSlew.exec();
+            '''
+        op = self.send(command)        
+        for line in op.splitlines():
+            if line == "0":
+                return(True)
+            if "5005" in line:
+                raise SkyxObjectNotFoundError("Object not found.")
+            if "Receive time-out" in line:                
+                raise SkyxObjectNotFoundError("Time out getting image.")
+        # God knows if we are here...
+        return (True)
+       
+    def takeimages(self, exposure, nimages):
+        command = """
+        var Imager = ccdsoftCamera;
+        function TakeOnePhoto()
+        {
+            Imager.Connect();
+            Imager.ExposureTime = """+str(exposure)+"""
+            Imager.Asynchronous = 0;
+            Imager.TakeImage();
+        }
+        
+        function Main()
+        {
+            for (i=0; i<"""+str(nimages)+"""; ++i)
+            {
+                TakeOnePhoto();
+            }
+        }
+        
+        Main();
+        """
+        op = self.send(command)        
+        for line in op.splitlines():
+            pass
+        pass
+    
     def sky6ObjectInformation(self, target):
         command = """
                 var Target = \"""" + target + """\"; 

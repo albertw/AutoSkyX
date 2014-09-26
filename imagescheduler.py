@@ -31,11 +31,7 @@ class imagescheduler():
         self.initeditframe()
         self.initrightframe()
         
-        
-        
     def inittableframe(self):
-        
-        
         self.tree_columns = ("Target", "Exp (s)", "# Exp", "     RA     ",
                              "     Dec     ", "     Alt     ", "     Az     ")
 
@@ -66,10 +62,8 @@ class imagescheduler():
                              command=self._deleteHandler)
         editrow = ttk.Button(self.ttable, text="Edit row",
                              command=self._editrowHandler)
-        run = ttk.Button(self.ttable, text="Run Schedule")
-        run.state(['disabled'])
-        check = ttk.Button(self.ttable, text="Check Schedule")
-        check.state(['disabled'])
+        run = ttk.Button(self.ttable, text="Run Schedule", command = self._runHandler)
+        check = ttk.Button(self.ttable, text="Check Schedule", command=self._checkHandler)
         up = ttk.Button(self.ttable, text="Up", command=self._up)
         down = ttk.Button(self.ttable, text="Down", command=self._down)
 
@@ -203,7 +197,45 @@ class imagescheduler():
             self.ttree.delete(item)
             
     def _runHandler(self):
-        pass
+        for target in self.ttree.get_children():
+            tname = self.ttree.item(target)['values'][0]
+            texp = self.ttree.item(target)['values'][1]
+            tnum = self.ttree.item(target)['values'][2]
+            skyx = SkyXConnection()
+            if skyx.closedloopslew(tname):
+                skyx.takeimages(texp,tnum)
+    
+    def _checkHandler(self):
+        try:
+            (fails, altfails) = self._check()
+        except TypeError:
+            tkMessageBox.showinfo(message="Can't get target data.")
+            return (False)
+        if fails:
+            tkMessageBox.showinfo(message="Can't get data for: " + str(fails))
+            return(False)
+        elif altfails:
+            tkMessageBox.showinfo(message="Targets are below horizon: " + str(altfails))
+        else:
+            tkMessageBox.showinfo(message="All targets OK")
+            return (True)
+        
+    def _check(self):
+        fails = []
+        altfails = []
+        for target in self.ttree.get_children():
+            try:
+                tname = self.ttree.item(target)['values'][0]
+                [ra, dec, alt, az] = self._updateskyx(tname)
+            except SkyxObjectNotFoundError:
+                fails.append(self.ttree.item(target)['values'][0])
+            except SkyxConnectionError, e:
+                tkMessageBox.showinfo(message="Can't connect to SkyX. " + 
+                                      str(e) + "\nis SkyX running?")
+                return(False)
+            if float(alt) < 10:
+                altfails.append(self.ttree.item(target)['values'][0])
+        return(fails, altfails)
     
     def _updateskyxHandler(self, *args):
         fails = []
