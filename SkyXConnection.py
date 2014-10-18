@@ -1,53 +1,78 @@
-from socket import *
+''' Method to handle connections to TheSkyX
+'''
+from __future__ import print_function
+
+from socket import socket, AF_INET, SOCK_STREAM, SHUT_RDWR, error
+
 
 class SkyxObjectNotFoundError(Exception):
+    ''' Exception for objects not found in SkyX.
+    '''
     def __init__(self, value):
+        ''' init'''
+        super(SkyxObjectNotFoundError, self).__init__(value)
         self.value = value
     def __str__(self):
+        ''' returns the error string '''
         return repr(self.value)
-    
+
 class SkyxConnectionError(Exception):
+    ''' Exception for Failures to Connect to SkyX
+    '''
     def __init__(self, value):
+        ''' init'''
+        super(SkyxConnectionError, self).__init__(value)
         self.value = value
     def __str__(self):
+        ''' returns the error string '''
         return repr(self.value)
-    
-class SkyXConnection():
-      
+
+class SkyXConnection(object):
+    ''' Class to handle connections to TheSkyX
+    '''
     def __init__(self, host="localhost", port=3040):
+        ''' define host and port for TheSkyX.
+        '''
         self.host = host
         self.port = port
-        
+
     def send(self, command):
+        ''' sends a js script to TheSkyX and returns the output.
+        '''
         try:
             sockobj = socket(AF_INET, SOCK_STREAM)
             sockobj.connect((self.host, self.port))
             sockobj.send(bytes("/* Java Script */\n" + command))
-            op = sockobj.recv(2048)    
-            sockobj.shutdown(SHUT_RDWR)  
+            oput = sockobj.recv(2048)
+            sockobj.shutdown(SHUT_RDWR)
             sockobj.close()
-            return op
+            return oput
         except error as msg:
             raise SkyxConnectionError(msg)
-                
-    def closedloopslew(self,target):
+
+    def closedloopslew(self, target):
+        ''' Perform a lcosed loop slew.
+            Slew, take image, solve, slew, take image, confirm.
+        '''
         # 0 on success
         command = '''
             sky6StarChart.Find("''' + target + '''");
             ClosedLoopSlew.exec();
             '''
-        op = self.send(command)        
-        for line in op.splitlines():
+        oput = self.send(command)
+        for line in oput.splitlines():
             if line == "0":
-                return(True)
+                return True
             if "5005" in line:
                 raise SkyxObjectNotFoundError("Object not found.")
-            if "Receive time-out" in line:                
+            if "Receive time-out" in line:
                 raise SkyxObjectNotFoundError("Time out getting image.")
         # God knows if we are here...
-        return (True)
-       
+        return True
+
     def takeimages(self, exposure, nimages):
+        ''' Take a given number of images of a specified exposure.
+        '''
         command = """
         var Imager = ccdsoftCamera;
         function TakeOnePhoto()
@@ -57,7 +82,7 @@ class SkyXConnection():
             Imager.Asynchronous = 0;
             Imager.TakeImage();
         }
-        
+
         function Main()
         {
             for (i=0; i<"""+str(nimages)+"""; ++i)
@@ -65,17 +90,20 @@ class SkyXConnection():
                 TakeOnePhoto();
             }
         }
-        
+
         Main();
         """
-        op = self.send(command)        
-        for line in op.splitlines():
+        # TODO
+        oput = self.send(command)
+        for line in oput.splitlines():
             pass
         pass
-    
+
     def sky6ObjectInformation(self, target):
+        ''' Method to return basic SkyX position information on a target.
+        '''
         command = """
-                var Target = \"""" + target + """\"; 
+                var Target = \"""" + target + """\";
                 var Target56 = 0;
                 var Target57 = 0;
                 var Target58 = 0;
@@ -112,20 +140,22 @@ class SkyXConnection():
                 }
                 """
         results = {}
-        op = self.send(command)
-        for line in op.splitlines():
+        oput = self.send(command)
+        for line in oput.splitlines():
             if "Object not found" in line:
                 raise SkyxObjectNotFoundError("Object not found.")
             if ":" in line:
                 info = line.split(":")[0]
                 val = line.split(":")[1]
                 results[info] = val
-        return (results)
-        
-                
+        return results
+
+
     def test1(self):
+        ''' basic test
+        '''
         command = """
-/* Java Script */ 
+/* Java Script */
 var Out;
 var PropCnt = 189;
 var p;
@@ -150,7 +180,7 @@ for (p=0;p<PropCnt;++p)
 
 
 if __name__ == "__main__":
-    x = SkyXConnection()
-    print x.sky6ObjectInformation("Saturn")
+    xconn = SkyXConnection()
+    print(xconn.sky6ObjectInformation("Saturn"))
 
-    
+

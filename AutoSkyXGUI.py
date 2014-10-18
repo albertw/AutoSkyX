@@ -1,12 +1,11 @@
-
-from Tkinter import *
-from tkFileDialog import *
+''' AutoSkyXGUI root window module
+'''
+from Tkinter import N, S, E, W, Tk, FALSE, Menu
+import imagescheduler
+import neocphelper
 import ttk
 
-import neocphelper
-import imagescheduler
 
-    
 # Set up the root window
 root = Tk()
 root.option_add('*tearOff', FALSE)
@@ -34,7 +33,7 @@ menubar.add_cascade(label="File")
 menubar.add_cascade(label="Help")
 
 n.grid(column=0, row=0, sticky=(N, S, E, W))
-n.grid_columnconfigure(0 , weight=1)
+n.grid_columnconfigure(0, weight=1)
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
