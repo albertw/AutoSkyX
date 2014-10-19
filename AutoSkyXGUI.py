@@ -3,6 +3,7 @@
 from Tkinter import N, S, E, W, Tk, FALSE, Menu
 import imagescheduler
 import neocphelper
+import focuser
 import ttk
 
 
@@ -21,11 +22,17 @@ f2 = ttk.Frame(n)
 f2.grid(column=0, row=0, sticky=(N, S, E, W))
 f2.columnconfigure(0, weight=3)
 f2.rowconfigure(0, weight=3)
+f3 = ttk.Frame(n)
+f3.grid(column=0, row=0, sticky=(N, S, E, W))
+f3.columnconfigure(0, weight=3)
+f3.rowconfigure(0, weight=3)
 n.add(f1, text="NEOCPHelper")
 n.add(f2, text="AutoSkyX")
+n.add(f3, text="Focuser")
 
 neos = neocphelper.neocp(f1)
 isframe = imagescheduler.imagescheduler(f2, neos)
+focuserframe = focuser.Focuser(f3)
 
 # Add menubar
 menubar = Menu(root)
