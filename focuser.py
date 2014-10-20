@@ -1,7 +1,7 @@
 ''' Module to handle the motorised focuser via an Arduino
 '''
 
-from Tkinter import N, S, E, W, HORIZONTAL, StringVar
+from Tkinter import N, S, E, W, HORIZONTAL, StringVar, Tk
 import ttk
 
 class Focuser(object):
@@ -80,3 +80,8 @@ class Focuser(object):
         com = ttk.Combobox(comframe, textvariable=self.com)
         com['values'] = ('COM6', 'COM7', 'COM8', 'COM9')
         com.grid(column=1, row=0)
+
+if __name__ == "__main__":
+    ROOT = Tk()
+    Focuser(ROOT)
+    ROOT.mainloop()
