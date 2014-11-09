@@ -46,16 +46,19 @@ class Arduino(object):
         ''' Connect to the serial port arduino and read off the first two
             lines.
         '''
+        # TODO: Disabled for now by default
         self.com_port = serialport
-        self.ser = serial.Serial(self.com_port, 9600)
-        print(self.ser.readline())
-        print(self.ser.readline())
+        #self.ser = serial.Serial(self.com_port, 9600)
+        #print(self.ser.readline())
+        #print(self.ser.readline())
 
     def disconnect(self):
         ''' Disconnect serial connection to arduino.
         '''
-        self.ser.close()
-
+        # TODO disabled for now by defaults
+        #self.ser.close()
+        pass
+    
     def __get_serial_line(self):
         ''' Read a line from the serial port. Raise exception if it does
             not start with the string "ARDUINO:".

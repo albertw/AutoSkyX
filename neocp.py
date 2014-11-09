@@ -6,6 +6,7 @@ Created on 9 Sep 2014
 from __future__ import print_function
 
 import math
+import unittest
 
 import ephem
 
@@ -41,6 +42,7 @@ class neo(object):
         self.rate = ""
         self.g = ""
         self.epoch = ""
+        self.pyepoch = ""
         self.m = ""
         self.peri = ""
         self.node = ""
@@ -76,6 +78,8 @@ class neo(object):
         self.h = H
         self.g = G
         self.epoch = Epoch
+        [year, month, day]=self.epoch.split()
+        self.pyepoch = month + "/" + day.split(".")[0] + "/" + year
         self.m = M
         self.peri = Peri
         self.node = Node
@@ -104,19 +108,27 @@ class neo(object):
         target = ephem.readdb(self.tmpdesig + ",e," + self.incl + "," +
                               self.node + "," + self.peri + "," + self.a +
                               "," + self.n + "," + self.e + "," + self.m +"," +
-                              "10/10/2014,2000,H" + self.h + "," + self.g)
+                              self.pyepoch + ",2000,H" + self.h + "," + self.g)
+        print("DEBUG ephem: " + self.tmpdesig + ",e," + self.incl + "," +
+                              self.node + "," + self.peri + "," + self.a +
+                              "," + self.n + "," + self.e + "," + self.m +"," +
+                              self.pyepoch + ",2000,H" + self.h + "," + self.g)
         print("DEBUG Name: " + self.tmpdesig)
         target.compute(z72)
         self.alt = int(round(math.degrees(target.alt)))
         # To match the MPC format
         self.az = int(round(math.degrees(target.az))) + 180
-        self.v = target.mag
+        #self.v = target.mag
 
         # We need to do a little more work to get the J2000 RA & Dec.
         tjnow = ephem.Equatorial(target.ra, target.dec, epoch=z72.date)
+        print("DEBUG RA : " + str(target.ra))
+        print("DEBUG Dec: " + str(target.dec))
         tj2000 = ephem.Equatorial(tjnow, epoch='2000')
         self.ra = tj2000.ra
         self.dec = tj2000.dec
+        print("DEBUG RA : " + str(self.ra))
+        print("DEBUG Dec: " + str(self.dec))
 
         # Get the location one minute later
         z72.date = z72.date+ephem.minute
@@ -173,3 +185,69 @@ class neo(object):
             if ans < 0:
                 ans = 360 + ans
             return round(ans, 2)
+        
+class Testneoephem(unittest.TestCase):
+    ''' Test that our astronomical calculations are working
+MPC reference data:
+Date       UT   *  R.A. (J2000) Decl.  Elong.  V        Motion     Object     Sun         Moon        Uncertainty
+            h                                        "/min   P.A.  Azi. Alt.  Alt.  Phase Dist. Alt.
+2014 10 27 23     04 04 19.7 +19 57 46 151.3  19.5   21.76  283.7  295  +42   -48    0.18  159  -28
+    '''
+ 
+    def setUp(self):
+        self.observer = ephem.Observer()
+        self.observer.lon = "-6.1136"
+        self.observer.lat = "53.2744"
+        self.observer.elevation = 100
+        self.observer.date = ephem.Date("2014-10-27 23:00:00")
+        self.observer.epoch = "2000"
+       
+        self.target = ephem.readdb("P10frjh,e,7.43269,35.02591,162.97669," +
+                                   "0.6897594,1.72051182,0.5475395," +
+                                   "195.80709,10/10/2014,2000,H26.4,0.15")
+        self.target.compute(self.observer)
+        tjnow = ephem.Equatorial(self.target.ra, self.target.dec,
+                                 epoch=self.observer.date)
+        self.targetj2000 = ephem.Equatorial(tjnow, epoch='2000')
+       
+        self.observer.date = self.observer.date+ephem.minute
+        self.target.compute(self.observer)
+        tjnow = ephem.Equatorial(self.target.ra, self.target.dec,
+                                 epoch=self.observer.date)
+        self.targetj2000plus = ephem.Equatorial(tjnow, epoch='2000')
+        self.rarate = str(float(self.targetj2000plus.ra -
+                                self.targetj2000.ra))
+        self.decrate = str(float(self.targetj2000plus.dec -
+                                 self.targetj2000.dec))
+ 
+       
+    def test_target_ra_j2000(self):
+        
+        print(self.observer.date.tuple())
+        print(self.target.ra)
+        print(self.target.dec)
+        self.assertEqual(str(self.targetj2000.ra), "4:04:21.28",
+                        "Target RA is not expected value 4:04:21.28:" +
+                        str(self.targetj2000.ra))
+       
+    def test_target_dec_j2000(self):
+        self.assertEqual(str(self.targetj2000.dec), "19:57:28.5",
+                        "Target RA is not expected value 19:57:28.5:" +
+                        str(self.targetj2000.dec))
+ 
+    def test_target_ra_rate(self):
+        # TODO these don't match on MacOS and Win. Need to use approximate
+        # comparison
+        self.assertEqual(self.rarate, "-0.000109086432381",
+                        "RA rate is not expected value -0.000109086432381:" +
+                        self.rarate)
+   
+    def test_target_dec_rate(self):
+        # TODO these don't match on MacOS and Win. Need to use approximate
+        # comparison
+        self.assertEqual(self.decrate, "2.49415833039e-05",
+                        "RA rate is not expected value 2.49415833039e-05:" +
+                        self.decrate)        
+       
+if __name__ == '__main__':
+    unittest.main(verbosity=1)

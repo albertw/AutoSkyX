@@ -103,10 +103,10 @@ class MPCweb(object):
             for line in data:
                 if "NEOCPNomin" in line:
                     values = line.split()
-                    item.addorbitdata(values[1], values[2], values[3],
-                                      values[4], values[5], values[6],
-                                      values[7], values[8], values[9],
-                                      values[10])
+                    item.addorbitdata(values[1], values[2],
+                                      self.unpackEpoch(values[3]), values[4],
+                                      values[5], values[6], values[7],
+                                      values[8], values[9], values[10])
                     dbline = "  %-19.19s|%-14.14s|%8.6f  |%8f|%8.4f|%8.4f |%8.4f| 2000|%9.4f  |%5.2f|%-5.2f|   0.00\n" % (
                               values[0], self.unpackEpoch(values[3]),
                               float(values[8]), float(values[10]),
