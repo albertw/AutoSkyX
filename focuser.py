@@ -4,6 +4,7 @@ from __future__ import print_function
 
 from Tkinter import N, S, E, W, HORIZONTAL, StringVar, Tk
 import ttk
+import tkMessageBox
 
 import arduino
 
@@ -17,10 +18,9 @@ class Focuser(object):
         '''
 
         self.uno = arduino.Arduino()
-        self.uno.connect("COM8")
 
         self.frame = frame
-        self.com = StringVar()
+        self.comport = StringVar()
 
         rframe = ttk.Frame(self.frame)
         rframe.grid(sticky=(N, S, E, W))
@@ -42,10 +42,6 @@ class Focuser(object):
         comframe.rowconfigure(0, weight=3)
 
         self.__comport(comframe)
-
-        notice = ttk.Label(rframe, text="THIS IS A PLACEHOLDER NOTEBOOK - " +
-                           "NOT IMPLEMENTED")
-        notice.grid()
 
     def __sliders(self, sliders):
         ''' Private function to handle the sliders.
@@ -98,12 +94,31 @@ class Focuser(object):
     def __comport(self, comframe):
         ''' Private function to handle the COM port selector.
         '''
-        label = ttk.Label(comframe, text="Select COM port: ")
-        label.grid(column=0, row=0)
-        com = ttk.Combobox(comframe, textvariable=self.com)
-        com['values'] = ('COM6', 'COM7', 'COM8', 'COM9')
-        com.grid(column=1, row=0)
-
+        self.comlabel = ttk.Label(comframe, text="Select COM port: ")
+        self.comlabel.grid(column=0, row=0)
+        self.com = ttk.Combobox(comframe, textvariable=self.comport)
+        self.com['values'] = ('COM6', 'COM7', 'COM8', 'COM9')
+        self.com.current(2)
+        self.com.grid(column=1, row=0)
+        self.connect  = ttk.Button(comframe, text="Connect", command=self.__connect)
+        self.connect.grid(column=2, row=0)
+        
+    def __connect(self):
+        ''' Get the com port and call connect or disconnect if we are already 
+            connected
+        '''
+        if self.uno.isconnected():
+            self.uno.disconnect()
+            self.connect.config(text="Connect")    
+        else:
+            try:
+                self.uno.connect(self.comport.get())
+                self.connect.config(text="Disconnect")
+            except OSError, errmsg:
+                tkMessageBox.showinfo("Arduino Error", str(errmsg) +
+                                      "\nHint: Check the com port your " +
+                                      "arduino is attached to.")          
+                
     def __full_reverse(self):
         self.uno.send_char("q")
 

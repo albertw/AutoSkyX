@@ -46,12 +46,18 @@ class Arduino(object):
         ''' Connect to the serial port arduino and read off the first two
             lines.
         '''
-        # TODO: Disabled for now by default
         self.com_port = serialport
-        #self.ser = serial.Serial(self.com_port, 9600)
-        #print(self.ser.readline())
-        #print(self.ser.readline())
+        print(self.com_port)
+        self.ser = serial.Serial(self.com_port, 9600)
+        print(self.ser.readline())
+        print(self.ser.readline())
 
+    def isconnected(self):
+        if self.ser:
+            return True
+        else:
+            return False
+        
     def disconnect(self):
         ''' Disconnect serial connection to arduino.
         '''
