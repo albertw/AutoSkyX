@@ -173,7 +173,6 @@ class neo(object):
             aa = math.pi/2 - (self.dec + self.decrate)
             C = self.rarate
             c = rate
-            print(c)
             try:
                 ans = 180 - math.degrees(math.asin(math.sin(C) *
                                                    math.sin(aa) /
