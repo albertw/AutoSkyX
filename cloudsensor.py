@@ -7,6 +7,8 @@ import datetime
 from random import randint
 import subprocess
 import sys
+import socket
+import select
 import ttk
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -42,6 +44,8 @@ class CloudSensor(object):
         self.fig = None
         self.canvas = None
         self.ax1 = None
+        self.csmode = StringVar()
+        self.socket = None
 
         rframe = ttk.Frame(self.frame)
         rframe.grid(sticky=(N, S, E, W))
@@ -58,6 +62,7 @@ class CloudSensor(object):
 
         self.__info(info)
         self.frame.after(2000, self.updatetmp)
+        self.frame.after(100, self.network)
 
     def __plot(self, frame):
         ''' Draw the plot of temperatures.
@@ -109,23 +114,46 @@ class CloudSensor(object):
         threshold = ttk.Entry(frame, textvariable=self.threshold)
         threshold.grid(column=1, row=2, padx=5, sticky=(N, S, E, W))
 
+        comlabel = ttk.Label(frame, text="Select Client/Server Mode: ")
+        comlabel.grid(column=0, row=3, padx=5, sticky=(N, S, E, W))
+        self.com = ttk.Combobox(frame, textvariable=self.csmode)
+        self.com['values'] = ('Off', 'Client', 'Server')
+        self.com.current(0)
+        self.com.grid(column=1, row=3, padx=5, sticky=(N, S, E, W))
+        
         warning = ttk.Label(frame, text="DEMO MODE")
-        warning.grid(column=0, row=3, padx=5, sticky=(N, S, E, W))
+        warning.grid(column=0, row=4, padx=5, sticky=(N, S, E, W))
 
     def updatetmp(self):
         ''' Update the temperatures and gui.
             Also check if we need to raise alarm.
         '''
-        newtmp = randint(0, 100)
-        anewtmp = randint(0, 100)
-        #newtmp, anewtmp = uno.get_temperatures()
-        self.skytmphist.append(newtmp)
-        self.ambtmphist.append(anewtmp)
-        self.timearray.append(datetime.datetime.now())
-        self.skytemp.config(text=str(newtmp))
-        self.ambtemp.config(text=str(anewtmp))
+        if 'Client' in self.csmode.get():
+            mesg = self.network()
+            if mesg == None:
+                print "Didnt get a response from the server..."
+                self.frame.after(polldelay, self.updatetmp)
+                return
+            else:
+                [a, b, c] = mesg.split(';')
+                self.timearray.append(datetime.datetime.strptime(a.split('.')[0], '%Y-%m-%d %H:%M:%S'))
+                self.skytmphist.append(int(b))
+                self.ambtmphist.append(int(c))
+        else:
+            if self.uno.isconnected == True:
+                #newtmp, anewtmp = uno.get_temperatures()
+                pass
+            else:
+                newtmp = randint(0, 100)
+                anewtmp = randint(0, 100)
+                self.skytmphist.append(newtmp)
+                self.ambtmphist.append(anewtmp)
+            tnow = datetime.datetime.now()
+            self.timearray.append(tnow)
+        self.skytemp.config(text=str(self.skytmphist[-1]))
+        self.ambtemp.config(text=str(self.ambtmphist[-1]))
         self.__updateplot()
-        if newtmp > int(self.threshold.get()):
+        if self.skytmphist[-1] > int(self.threshold.get()):
             if sys.platform == 'darwin':
                 audio_file = "Siren_Noise.wav"
                 subprocess.Popen(["afplay " + audio_file], shell=True,
@@ -133,6 +161,41 @@ class CloudSensor(object):
                                  close_fds=True)
         self.frame.after(polldelay, self.updatetmp)
 
+    def network(self):
+        ''' Either Run a tcp server that a client can connect to
+            or run a client to connect to a server
+            or do nothing.
+        '''
+        mode = self.csmode.get()
+        #print mode
+        if 'Off' in mode:
+            self.frame.after(100, self.network)
+            return
+        elif 'Server' in mode:
+            if self.socket == None:
+                self.socket = socket.socket(
+                                socket.AF_INET, socket.SOCK_STREAM)
+                self.socket.bind((socket.gethostname(), 8001))
+                self.socket.setblocking(0)
+                self.socket.listen(5)
+            try:
+                cstring = str(self.timearray[-1]) + ";" + str(self.skytmphist[-1]) + ";" + str(self.ambtmphist[-1])
+                a,b,c = select.select([self.socket], [], [], 0)
+                for s in a:
+                    client_socket, address = self.socket.accept()
+                    #print "Connection from", address
+                    client_socket.send(cstring)
+            except Exception as msg:
+                print ("exception: " +  str(msg))
+            #print ("Timeout")
+        elif 'Client' in mode:
+            self.frame.after(100, self.network)
+            # Make up some data to send back
+            # TODO
+            return (str(datetime.datetime.now()) + ";95;39")
+        self.frame.after(100, self.network)
+
+    
 if __name__ == "__main__":
     ROOT = Tk()
     CloudSensor(ROOT)
