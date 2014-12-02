@@ -22,9 +22,11 @@ except ImportError:
     # must not be windows...
     pass
 
-
+# TODO: This should be in a config script along with server names etc.
 # delay in ms to update temperatures
 polldelay = 2000
+offdelay = 500
+serverdelay = 100
 
 class CloudSensor(object):
     ''' Cloud sensor notebook object'''
@@ -61,8 +63,9 @@ class CloudSensor(object):
         info.rowconfigure(0, weight=3)
 
         self.__info(info)
-        self.frame.after(2000, self.updatetmp)
-        self.frame.after(100, self.network)
+        
+        self.updatetmp()
+        self.network()
 
     def __plot(self, frame):
         ''' Draw the plot of temperatures.
@@ -129,9 +132,18 @@ class CloudSensor(object):
             Also check if we need to raise alarm.
         '''
         if 'Client' in self.csmode.get():
-            mesg = self.network()
+            try:
+                if self.socket != None:
+                    self.socket.close()
+                    self.socket = None
+                self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.socket.connect((socket.gethostname(), 8001))
+                mesg = self.socket.recv(32).strip('\0')
+                self.socket.close()
+            except Exception as msg:
+                print ("client exception: " +  str(msg))
             if mesg == None:
-                print "Didnt get a response from the server..."
+                print "Didn't get a response from the server..."
                 self.frame.after(polldelay, self.updatetmp)
                 return
             else:
@@ -153,6 +165,7 @@ class CloudSensor(object):
         self.skytemp.config(text=str(self.skytmphist[-1]))
         self.ambtemp.config(text=str(self.ambtmphist[-1]))
         self.__updateplot()
+        # TODO: Add a goddam mute button!
         if self.skytmphist[-1] > int(self.threshold.get()):
             if sys.platform == 'darwin':
                 audio_file = "Siren_Noise.wav"
@@ -169,7 +182,7 @@ class CloudSensor(object):
         mode = self.csmode.get()
         #print mode
         if 'Off' in mode:
-            self.frame.after(100, self.network)
+            self.frame.after(offdelay, self.network)
             return
         elif 'Server' in mode:
             if self.socket == None:
@@ -179,23 +192,17 @@ class CloudSensor(object):
                 self.socket.setblocking(0)
                 self.socket.listen(5)
             try:
-                cstring = str(self.timearray[-1]) + ";" + str(self.skytmphist[-1]) + ";" + str(self.ambtmphist[-1])
+                cstring = str(self.timearray[-1]) + ";" + \
+                          str(self.skytmphist[-1]) + ";" + \
+                          str(self.ambtmphist[-1]) + "\0"
                 a,b,c = select.select([self.socket], [], [], 0)
                 for s in a:
                     client_socket, address = self.socket.accept()
-                    #print "Connection from", address
                     client_socket.send(cstring)
             except Exception as msg:
-                print ("exception: " +  str(msg))
-            #print ("Timeout")
-        elif 'Client' in mode:
-            self.frame.after(100, self.network)
-            # Make up some data to send back
-            # TODO
-            return (str(datetime.datetime.now()) + ";95;39")
-        self.frame.after(100, self.network)
+                print ("exception1: " +  str(msg))
+            self.frame.after(serverdelay, self.network)
 
-    
 if __name__ == "__main__":
     ROOT = Tk()
     CloudSensor(ROOT)
