@@ -201,8 +201,6 @@ class CloudSensor(object):
         self.skytemp.config(text=str(self.skytmphist[-1]))
         self.ambtemp.config(text=str(self.ambtmphist[-1]))
         self.__updateplot()
-        # TODO: And a start/stop button...
-        print self.mute
         if self.skytmphist[-1] > int(self.threshold.get()) and not self.mute:
             if sys.platform == 'darwin':
                 audio_file = "Siren_Noise.wav"
