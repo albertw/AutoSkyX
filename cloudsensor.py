@@ -52,6 +52,8 @@ class CloudSensor(object):
         self.mute = False
         self.mutebutton = None
         self.com = None
+        self.stopbutton = None
+        self.stop = True
 
         rframe = ttk.Frame(self.frame)
         rframe.grid(sticky=(N, S, E, W))
@@ -131,9 +133,22 @@ class CloudSensor(object):
         self.mutebutton = ttk.Button(frame, text="Mute",
                                      command=self.__mutebutton)
         self.mutebutton.grid(column=0, row=4, padx=5, sticky=(N, S, E, W))
+        self.stopbutton = ttk.Button(frame, text="Start",
+                                     command=self.__stopbutton)
+        self.stopbutton.grid(column=1, row=4, padx=5, sticky=(N, S, E, W))
 
         warning = ttk.Label(frame, text="DEMO MODE")
         warning.grid(column=0, row=5, padx=5, sticky=(N, S, E, W))
+
+    def __stopbutton(self):
+        ''' Private function to toggle stop and start and change button text.
+        '''
+        if self.stop == False:
+            self.stop = True
+            self.stopbutton.config(text='Start')
+        else:
+            self.stop = False
+            self.stopbutton.config(text='Stop')
 
     def __mutebutton(self):
         ''' Private function to toggle mute and change button text
@@ -149,6 +164,9 @@ class CloudSensor(object):
         ''' Update the temperatures and gui.
             Also check if we need to raise alarm.
         '''
+        if self.stop:
+            self.frame.after(polldelay, self.updatetmp)
+            return
         if 'Client' in self.csmode.get():
             try:
                 if self.socket != None:
