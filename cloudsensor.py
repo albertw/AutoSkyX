@@ -2,6 +2,7 @@
 
     Siren wav from http://soundbible.com/1577-Siren-Noise.html
 '''
+
 from Tkinter import N, S, E, W, StringVar, Tk
 import datetime
 from random import randint
@@ -48,6 +49,9 @@ class CloudSensor(object):
         self.ax1 = None
         self.csmode = StringVar()
         self.socket = None
+        self.mute = False
+        self.mutebutton = None
+        self.com = None
 
         rframe = ttk.Frame(self.frame)
         rframe.grid(sticky=(N, S, E, W))
@@ -63,7 +67,7 @@ class CloudSensor(object):
         info.rowconfigure(0, weight=3)
 
         self.__info(info)
-        
+
         self.updatetmp()
         self.network()
 
@@ -123,9 +127,23 @@ class CloudSensor(object):
         self.com['values'] = ('Off', 'Client', 'Server')
         self.com.current(0)
         self.com.grid(column=1, row=3, padx=5, sticky=(N, S, E, W))
-        
+
+        self.mutebutton = ttk.Button(frame, text="Mute",
+                                     command=self.__mutebutton)
+        self.mutebutton.grid(column=0, row=4, padx=5, sticky=(N, S, E, W))
+
         warning = ttk.Label(frame, text="DEMO MODE")
-        warning.grid(column=0, row=4, padx=5, sticky=(N, S, E, W))
+        warning.grid(column=0, row=5, padx=5, sticky=(N, S, E, W))
+
+    def __mutebutton(self):
+        ''' Private function to toggle mute and change button text
+        '''
+        if self.mute == False:
+            self.mute = True
+            self.mutebutton.config(text='Unmute')
+        else:
+            self.mute = False
+            self.mutebutton.config(text='Mute')
 
     def updatetmp(self):
         ''' Update the temperatures and gui.
@@ -165,8 +183,9 @@ class CloudSensor(object):
         self.skytemp.config(text=str(self.skytmphist[-1]))
         self.ambtemp.config(text=str(self.ambtmphist[-1]))
         self.__updateplot()
-        # TODO: Add a goddam mute button!
-        if self.skytmphist[-1] > int(self.threshold.get()):
+        # TODO: And a start/stop button...
+        print self.mute
+        if self.skytmphist[-1] > int(self.threshold.get()) and not self.mute:
             if sys.platform == 'darwin':
                 audio_file = "Siren_Noise.wav"
                 subprocess.Popen(["afplay " + audio_file], shell=True,
@@ -187,7 +206,7 @@ class CloudSensor(object):
         elif 'Server' in mode:
             if self.socket == None:
                 self.socket = socket.socket(
-                                socket.AF_INET, socket.SOCK_STREAM)
+                            socket.AF_INET, socket.SOCK_STREAM)
                 self.socket.bind((socket.gethostname(), 8001))
                 self.socket.setblocking(0)
                 self.socket.listen(5)
@@ -195,7 +214,7 @@ class CloudSensor(object):
                 cstring = str(self.timearray[-1]) + ";" + \
                           str(self.skytmphist[-1]) + ";" + \
                           str(self.ambtmphist[-1]) + "\0"
-                a,b,c = select.select([self.socket], [], [], 0)
+                a, b, c = select.select([self.socket], [], [], 0)
                 for s in a:
                     client_socket, address = self.socket.accept()
                     client_socket.send(cstring)
