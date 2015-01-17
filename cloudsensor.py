@@ -5,6 +5,7 @@
 
 from Tkinter import N, S, E, W, StringVar, Tk
 import datetime
+import math
 from random import randint
 import subprocess
 import sys
@@ -100,7 +101,10 @@ class CloudSensor(object):
         self.ax1.plot(self.timearray, self.ambtmphist)
         self.fig.autofmt_xdate()
         ax = self.canvas.figure.axes[0]
-        ax.set_ylim(0, max(max(self.skytmphist), max(self.ambtmphist)))
+        maxt = max([float(a) for a in self.skytmphist + self.ambtmphist])
+        mint = min([float(a) for a in self.skytmphist + self.ambtmphist])
+
+        ax.set_ylim(int(mint) - 2, int(maxt) + 2)
         self.canvas.draw()
         c = self.canvas.get_tk_widget()
         c.grid(row=0, column=0)
@@ -136,10 +140,16 @@ class CloudSensor(object):
         self.stopbutton = ttk.Button(frame, text="Start",
                                      command=self.__stopbutton)
         self.stopbutton.grid(column=1, row=4, padx=5, sticky=(N, S, E, W))
+        resetbutton = ttk.Button(frame, text="Reset", command=self.__reset)
+        resetbutton.grid(column=0, row=5, padx=5, sticky=(N, S, E, W))
 
-        warning = ttk.Label(frame, text="DEMO MODE")
-        warning.grid(column=0, row=5, padx=5, sticky=(N, S, E, W))
-
+    def __reset(self):
+        ''' Purge the existing cloud data.
+        '''
+        self.skytmphist = []
+        self.ambtmphist = []
+        self.timearray = []
+        
     def __stopbutton(self):
         ''' Private function to toggle stop and start and change button text.
         '''
@@ -188,9 +198,26 @@ class CloudSensor(object):
                 self.skytmphist.append(int(b))
                 self.ambtmphist.append(int(c))
         else:
-            if self.uno.isconnected == True:
-                #newtmp, anewtmp = uno.get_temperatures()
-                pass
+            print self.uno.isconnected()
+            if self.uno.isconnected() == True:
+                # Add workaround for 1037.55
+                newtmp, anewtmp = self.uno.get_temperatures()
+                print newtmp
+                print anewtmp
+                if newtmp == '1037.55':
+                    try:
+                        self.skytmphist.append(self.skytmphist[-1])
+                    except IndexError:
+                        self.skytmphist.append('0')
+                else:
+                    self.skytmphist.append(newtmp)
+                if anewtmp == '1037.55':
+                    try:
+                        self.ambtmphist.append(self.ambtmphist[-1])
+                    except IndexError:
+                        self.ambtmphist.append('0')
+                else:
+                    self.ambtmphist.append(anewtmp)
             else:
                 newtmp = randint(0, 100)
                 anewtmp = randint(0, 100)
@@ -201,7 +228,8 @@ class CloudSensor(object):
         self.skytemp.config(text=str(self.skytmphist[-1]))
         self.ambtemp.config(text=str(self.ambtmphist[-1]))
         self.__updateplot()
-        if self.skytmphist[-1] > int(self.threshold.get()) and not self.mute:
+        if (float(self.skytmphist[-1]) > float((self.threshold.get()))) and not self.mute:
+            print "BEEEEEEEPPPPPP"
             if sys.platform == 'darwin':
                 audio_file = "Siren_Noise.wav"
                 subprocess.Popen(["afplay " + audio_file], shell=True,

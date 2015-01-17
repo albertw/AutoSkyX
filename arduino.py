@@ -115,7 +115,7 @@ class Arduino(object):
         ''' Send a single character to the arduino.
             We check for valid inputs.
         '''
-        if char not in 'qwertySD':
+        if char not in 'qwertyuSD':
             raise RuntimeError("Invalid character" + char)
         self.__write(char)
         output = self.__get_serial_line()

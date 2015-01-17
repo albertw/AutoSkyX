@@ -1,11 +1,13 @@
 ''' AutoSkyXGUI root window module
 '''
 from Tkinter import N, S, E, W, Tk, FALSE, Menu
+import arduinogui
 import cloudsensor
 import imagescheduler
 import neocphelper
 import focuser
 import ttk
+from arduinogui import ArduinoGUI
 
 
 # Set up the root window
@@ -31,16 +33,21 @@ f4 = ttk.Frame(n)
 f4.grid(column=0, row=0, sticky=(N, S, E, W))
 f4.columnconfigure(0, weight=3)
 f4.rowconfigure(0, weight=3)
+f5 = ttk.Frame(n)
+f5.grid(column=0, row=0, sticky=(N, S, E, W))
+f5.columnconfigure(0, weight=3)
+f5.rowconfigure(0, weight=3)
 n.add(f1, text="NEOCPHelper")
 n.add(f2, text="AutoSkyX")
 n.add(f3, text="Focuser")
 n.add(f4, text="CloudSensor")
+n.add(f5, text="Arduino")
 
 neos = neocphelper.neocp(f1)
 isframe = imagescheduler.imagescheduler(f2, neos)
 focuserframe = focuser.Focuser(f3)
 cloudframe = cloudsensor.CloudSensor(f4)
-
+arduinoframe = arduinogui.ArduinoGUI(f5)
 # Add menubar
 menubar = Menu(root)
 menubar.add_cascade(label="File")
