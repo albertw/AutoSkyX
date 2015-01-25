@@ -43,6 +43,8 @@ class neocp(object):
         # Right Buttons
         getNeocp = ttk.Button(self.bcontainer, text="Get NEOCP",
                               command=self.getNeocpHandler)
+        getCrits = ttk.Button(self.bcontainer, text="Get Critical List",
+                              command=self.getCritsHandler)
         getOrbData = ttk.Button(self.bcontainer,
                                 text="Download Orbit information",
                                 command=self.getOrbDataHandler)
@@ -63,11 +65,12 @@ class neocp(object):
                             anchor=W, justify=LEFT)
 
         getNeocp.grid(column=0, row=0, sticky=(N, S, E, W))
-        getOrbData.grid(column=0, row=1, sticky=(N, S, E, W))
-        saveSADB.grid(column=0, row=2, sticky=(N, S, E, W))
-        updateskyx.grid(column=0, row=3, sticky=(N, S, E, W))
-        saveFO.grid(column=0, row=4, sticky=(N, S, E, W))
-        helptxt.grid(column=0, row=5, sticky=(N, S, E, W), ipady=20, padx=10)
+        getCrits.grid(column=0, row=1, sticky=(N, S, E, W))
+        getOrbData.grid(column=0, row=2, sticky=(N, S, E, W))
+        saveSADB.grid(column=0, row=3, sticky=(N, S, E, W))
+        updateskyx.grid(column=0, row=4, sticky=(N, S, E, W))
+        saveFO.grid(column=0, row=5, sticky=(N, S, E, W))
+        helptxt.grid(column=0, row=6, sticky=(N, S, E, W), ipady=20, padx=10)
 
         # List
         self.neocptree = ttk.Treeview(self.content, columns=self.tree_columns,
@@ -75,9 +78,9 @@ class neocp(object):
                                       displaycolumns=[0, 10, 3, 4, 5, 6, 7, 8, 9, 11, 12])
         vsb = ttk.Scrollbar(orient="vertical", command=self.neocptree.yview)
         self.neocptree.configure(yscrollcommand=vsb.set)
-        self.neocptree.grid(columnspan=3, column=0, row=0,
+        self.neocptree.grid(columnspan=4, column=0, row=0,
                             sticky='nsew', in_=self.content)
-        vsb.grid(column=3, row=0, sticky='ns', in_=self.content)
+        vsb.grid(column=4, row=0, sticky='ns', in_=self.content)
         # data is fixed width so just do it for the headings that
         # we've already spaced out
         for col in self.tree_columns:
@@ -96,7 +99,9 @@ class neocp(object):
         delrows = ttk.Button(self.content, text="Delete rows",
                              command=self.deleteRowsHandler)
         delrows.grid(column=2, row=1, sticky=(E))
-
+        delall = ttk.Button(self.content, text="Delete all",
+                             command=self.deleteAllHandler)
+        delall.grid(column=3, row=1, sticky=(E))
         self.neocptree.grid(column=0, row=0, sticky=(N, W, E, S))
 
     def getNeocpHandler(self):
@@ -105,7 +110,8 @@ class neocp(object):
         '''
         try:
             mpc = MPCweb.MPCweb()
-            self.neocplist = mpc.getneocp()
+            self.neocplist.extend(mpc.getneocp())
+            self.neocplist = remove_dups(self.neocplist)
             for item in self.neocptree.get_children():
                 self.neocptree.delete(item)
             for item in self.neocplist:
@@ -114,7 +120,24 @@ class neocp(object):
             tkMessageBox.showinfo("NEOCP Error", "Can't get NEOCP data:\n" +
                                   str(errmsg) + "\n Check you are online.")
 
-
+    def getCritsHandler(self):
+        ''' Handler to get the Critical list.
+        '''
+        try:
+            mpc = MPCweb.MPCweb()
+            crits = mpc.getcrits()
+            for target in crits:
+                target.updateephem(self.timestring.get())
+            self.neocplist.extend(crits)
+            self.neocplist = remove_dups(self.neocplist)
+            for item in self.neocptree.get_children():
+                self.neocptree.delete(item)
+            for item in self.neocplist:
+                self.neocptree.insert('', 'end', values=item.neolist())
+        except urllib2.URLError, errmsg:
+            tkMessageBox.showinfo("Critlist Error", "Can't get Critlist data:\n" +
+                                  str(errmsg) + "\n Check you are online.")
+            
     def sortby(self, tree, col, descending):
         """Sort tree contents when a column is clicked on."""
         # grab values to sort
@@ -140,6 +163,12 @@ class neocp(object):
             self.neocplist = ([x for x in self.neocplist
                                if x.tmpdesig != tmpdesig])
             self.neocptree.delete(item)
+            
+    def deleteAllHandler(self):
+        ''' Clear the list'''
+        for item in self.neocptree.get_children():
+            self.neocptree.delete(item)
+        self.neocplist = []
 
     def getOrbDataHandler(self):
         ''' Handler to download the MPC orbit information from the MPC for all
@@ -205,3 +234,12 @@ class neocp(object):
             self.neocptree.delete(item)
         for item in self.neocplist:
             self.neocptree.insert('', 'end', values=item.neolist())
+
+def remove_dups(mplist):
+    newlist = []
+    mps = []
+    for item in mplist:
+        if item.tmpdesig not in mps:
+            newlist.append(item)
+            mps.append(item.tmpdesig)
+    return newlist

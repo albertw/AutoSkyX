@@ -11,31 +11,29 @@ import unittest
 import ephem
 
 
-class neo(object):
+class minorplanet(object):
     '''
     classdocs
     '''
 
 
-    def __init__(self, tmpdesig, score, discovery, ra, dec, v, updated, note,
-                 observations, arc, h):
+    def __init__(self, tmpdesig, mptype="npc"):
         '''
-        Constructor
+        Constructor, Initialise everything to nothing
         '''
         self.tmpdesig = tmpdesig
-        self.score = score
-        self.discovery = discovery
-        self.ra = ra
-        self.dec = dec
-        self.v = v
-        self.updated = updated
-        self.note = note
-        self.observations = observations
-        self.arc = arc
-        self.h = h
+        self.score = ""
+        self.discovery = ""
+        self.ra = ""
+        self.dec = ""
+        self.v = ""
+        self.updated = ""
+        self.note = ""
+        self.observations = ""
+        self.arc = ""
+        self.h = ""
         self.rate = ""
         self.pa = ""
-        # self.ky6ObjectInformation skyxdata = new sky6ObjectInformation()=""
         self.alt = ""
         self.az = ""
         self.angle = ""
@@ -52,7 +50,40 @@ class neo(object):
         self.a = ""
         self.rarate = ""
         self.decrate = ""
+        self.type = mptype
 
+    def addneoprops(self, score, discovery, ra, dec, v, updated, note,
+                 observations, arc, h):
+        ''' Add the properties we get for NEO's from the MPC
+        '''
+        self.score = score
+        self.discovery = discovery
+        self.ra = ra
+        self.dec = dec
+        self.v = v
+        self.updated = updated
+        self.note = note
+        self.observations = observations
+        self.arc = arc
+        self.h = h
+        self.type = "neo"
+        
+    def addcritprops(self, epoch, e, a, incl, node, peri, m, h, g):
+        ''' Add the properties that we get from pulling the critical list
+        '''
+        self.epoch = epoch
+        [year, month, day]=self.epoch.split()
+        self.pyepoch = month + "/" + day.split(".")[0] + "/" + year
+        self.e = e
+        self.a = a
+        self.incl = incl
+        self.node = node
+        self.peri = peri
+        self.m = m
+        self.h = h
+        self.g = g
+        self.type = "mp"
+        
     def neolist(self):
         ''' Return the target object as a list.
         '''
@@ -73,7 +104,7 @@ class neo(object):
                 self.h]
 
     def addorbitdata(self, H, G, Epoch, M, Peri, Node, Incl, e, n, a):
-        ''' Add given orbit data to object.
+        ''' Add given orbit data for neo to object.
         '''
         self.h = H
         self.g = G
@@ -115,6 +146,7 @@ class neo(object):
                               self.pyepoch + ",2000,H" + self.h + "," + self.g)
         print("DEBUG Name: " + self.tmpdesig)
         target.compute(z72)
+        self.v = target.mag
         self.alt = int(round(math.degrees(target.alt)))
         # To match the MPC format
         self.az = int(round(math.degrees(target.az))) + 180
@@ -173,7 +205,13 @@ class neo(object):
             aa = math.pi/2 - (self.dec + self.decrate)
             C = self.rarate
             c = rate
+            print(C)
+            print(c)
+            print(aa)
             try:
+                x = math.sin(C) * math.sin(aa) / math.sin(c)
+                print(x)
+                print(math.asin(x))
                 ans = 180 - math.degrees(math.asin(math.sin(C) *
                                                    math.sin(aa) /
                                                    math.sin(c)))
@@ -181,6 +219,9 @@ class neo(object):
                 print(aa)
                 print(C)
                 print(c)
+                return 0
+            except ValueError:
+                # typically getting the asin of -1
                 return 0
             if ans < 0:
                 ans = 360 + ans
