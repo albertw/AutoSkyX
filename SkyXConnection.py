@@ -42,7 +42,8 @@ class SkyXConnection(object):
         try:
             sockobj = socket(AF_INET, SOCK_STREAM)
             sockobj.connect((self.host, self.port))
-            sockobj.send(bytes("/* Java Script */\n" + command))
+            sockobj.send(bytes('\* Java Script *\\n\* Socket Start Packet *\\n'
+                                + command + '\n\* Socket End Packet *\\n'))
             oput = sockobj.recv(2048)
             sockobj.shutdown(SHUT_RDWR)
             sockobj.close()
