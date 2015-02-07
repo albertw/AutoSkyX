@@ -1,11 +1,14 @@
 from __future__ import print_function
 
+import logging
 import pprint
 import re
 import urllib2
 
 import minorplanet
 
+
+logger = logging.getLogger(__name__)
 
 class MPCweb(object):
 
@@ -19,7 +22,7 @@ class MPCweb(object):
     def getpcp(self):
         data = urllib2.urlopen(self.pcp)
         for line in data:
-            print(line)
+            logger.debug(line)
 
     def getneocp(self):
         data = urllib2.urlopen(self.neocp)
@@ -42,10 +45,10 @@ class MPCweb(object):
         crits = []
         for line in data:
             res = regex.match(line)
-            print(line)
-            print(res.group(2))
+            logger.debug(line)
+            logger.debug(res.group(2))
             crit = minorplanet.minorplanet(res.group(1).strip(), mptype="mp") 
-            print(res.group(2))
+            logger.debug(res.group(2))
             crit.addcritprops(res.group(2), res.group(3),
                             res.group(4), res.group(5), res.group(6),
                             res.group(8), res.group(9),
@@ -120,7 +123,7 @@ class MPCweb(object):
                 if item.g == "":
                     url = "http://scully.cfa.harvard.edu/cgi-bin/showobsorbs.cgi?Obj=" \
                                     + item.tmpdesig + "&orb=y"
-                    print(url)
+                    logger.debug(url)
                     data = urllib2.urlopen(url)
                     for line in data:
                         if "NEOCPNomin" in line:
@@ -135,7 +138,7 @@ class MPCweb(object):
                                       float(values[7]), float(values[6]),
                                       float(values[5]), float(values[4]),
                                       float(values[1]), float(values[2]))
-                            print(dbline)
+                            logger.debug(dbline)
                             smalldb = smalldb + dbline
                             break
                 else:
@@ -144,14 +147,14 @@ class MPCweb(object):
                                   item.tmpdesig, item.epoch, item.e, item.a,
                                   item.incl, item.node, item.peri, item.m,
                                   item.h, item.g)
-                    print(dbline)
+                    logger.debug(dbline)
                     smalldb = smalldb + dbline
             else: # critlist
                 dbline = "  %-19.19s|%-14.14s|%8.6s  |%8s|%8.4s|%8.4s |%8.4s| 2000|%9.4s  |%5.2s|%-5.2s|   0.00\n" % (
                                   item.tmpdesig, item.epoch, item.e, item.a,
                                   item.incl, item.node, item.peri, item.m,
                                   item.h, item.g)
-                print(dbline)
+                logger.debug(dbline)
                 smalldb = smalldb + dbline
                         
         return smalldb

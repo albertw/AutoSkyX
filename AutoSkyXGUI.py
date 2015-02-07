@@ -1,14 +1,25 @@
 ''' AutoSkyXGUI root window module
 '''
 from Tkinter import N, S, E, W, Tk, FALSE, Menu
+import logging
+import ttk
+
+from arduinogui import ArduinoGUI
 import arduinogui
 import cloudsensor
+import focuser
 import imagescheduler
 import neocphelper
-import focuser
-import ttk
-from arduinogui import ArduinoGUI
 
+
+logger = logging.getLogger()
+
+logger.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 # Set up the root window
 root = Tk()

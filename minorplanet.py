@@ -6,12 +6,15 @@ Created on 9 Sep 2014
 from __future__ import print_function
 
 import datetime
+import logging
 import math
 import time
 import unittest
 
 import ephem
 
+
+logger = logging.getLogger(__name__)
 
 class minorplanet(object):
     '''
@@ -143,11 +146,11 @@ class minorplanet(object):
                               self.node + "," + self.peri + "," + self.a +
                               "," + self.n + "," + self.e + "," + self.m +"," +
                               self.pyepoch + ",2000,H" + self.h + "," + self.g)
-        print("DEBUG ephem: " + self.tmpdesig + ",e," + self.incl + "," +
+        logger.debug("ephem: " + self.tmpdesig + ",e," + self.incl + "," +
                               self.node + "," + self.peri + "," + self.a +
                               "," + self.n + "," + self.e + "," + self.m +"," +
                               self.pyepoch + ",2000,H" + self.h + "," + self.g)
-        print("DEBUG Name: " + self.tmpdesig)
+        logger.debug("Name: " + self.tmpdesig)
         target.compute(z72)
         self.v = target.mag
         self.alt = int(round(math.degrees(target.alt)))
@@ -157,13 +160,13 @@ class minorplanet(object):
 
         # We need to do a little more work to get the J2000 RA & Dec.
         tjnow = ephem.Equatorial(target.ra, target.dec, epoch=z72.date)
-        print("DEBUG RA : " + str(target.ra))
-        print("DEBUG Dec: " + str(target.dec))
+        logger.debug("RA : " + str(target.ra))
+        logger.debug("Dec: " + str(target.dec))
         tj2000 = ephem.Equatorial(tjnow, epoch='2000')
         self.ra = tj2000.ra
         self.dec = tj2000.dec
-        print("DEBUG RA : " + str(self.ra))
-        print("DEBUG Dec: " + str(self.dec))
+        logger.debug("RA : " + str(self.ra))
+        logger.debug("Dec: " + str(self.dec))
 
         # Get the location one minute later
         z72.date = z72.date+ephem.minute
@@ -176,13 +179,12 @@ class minorplanet(object):
         self.decrate = dec2 - self.dec
         realrate = self.getrate(dec2)
 
-        print("DEBUG ra1R = " + str(float(self.ra)))
-        print("DEBUG ra2R = " + str(float(ra2)))
-        print("DEBUG dec1R = " + str(float(self.dec)))
-        print("DEBUG dec2R = " + str(float(dec2)))
-        print("DEBUG rarateR = " + str(float(self.rarate)))
-        print("DEBUG decrateR = " + str(float(self.decrate)))
-        print("DEBUG rate = " + str(float(realrate)))
+        logger.debug("ra1R = " + str(float(self.ra)))
+        logger.debug("ra2R = " + str(float(ra2)))
+        logger.debug("dec1R = " + str(float(self.dec)))
+        logger.debug("dec2R = " + str(float(dec2)))
+        logger.debug("decrateR = " + str(float(self.decrate)))
+        logger.debug("rate = " + str(float(realrate)))
 
         self.rate = round(math.degrees(realrate) * 60 * 60, 2)
         self.angle = self.getpa(realrate)
@@ -208,20 +210,14 @@ class minorplanet(object):
             aa = math.pi/2 - (self.dec + self.decrate)
             C = self.rarate
             c = rate
-            print(C)
-            print(c)
-            print(aa)
             try:
                 x = math.sin(C) * math.sin(aa) / math.sin(c)
-                print(x)
-                print(math.asin(x))
+
                 ans = 180 - math.degrees(math.asin(math.sin(C) *
                                                    math.sin(aa) /
                                                    math.sin(c)))
             except ZeroDivisionError:
-                print(aa)
-                print(C)
-                print(c)
+
                 return 0
             except ValueError:
                 # typically getting the asin of -1
