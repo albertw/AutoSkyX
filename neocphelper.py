@@ -21,11 +21,12 @@ class neocp(object):
 
     def __init__(self, frame):
         self.frame = frame
-        self.tree_columns = ("Tmp. Desig", "Score", "    Discovery    ",
-                             "    R.A.   ", "    Decl.    ", "   Alt.   ",
-                             "   Az.   ", "   Angle   ", "   Rate   ",
-                             "    V    ", "            Updated            ",
-                             "Note", "NObs", " Arc ", "   H  ")
+        self.tree_columns = ("      Designation      ", "Score", 
+                             "    Discovery    ", "      R.A.     ",
+                             "     Decl.     ", "   Alt.   ", "   Az.   ",
+                             "   Angle   ", "   Rate   ", "    V    ",
+                             "            Updated            ", "Note", "NObs",
+                             " Arc ", "   H  ")
         self.neocplist = []
         self.smalldb = None
         self.timestring = StringVar()
