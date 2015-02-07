@@ -113,31 +113,39 @@ class MPCweb(object):
     def genSmallDB(self, neocplist):
         ''' Download orbit data, store it in objects, and return a smalldb.
         '''
-        # TODO only go to mpc when we need to.
-        # TODO no seriously this needs to be implemented!
         smalldb = ""
         for item in neocplist:
             if item.type == "neo":
-                url = "http://scully.cfa.harvard.edu/cgi-bin/showobsorbs.cgi?Obj=" \
-                                + item.tmpdesig + "&orb=y"
-                print(url)
-                data = urllib2.urlopen(url)
-                for line in data:
-                    if "NEOCPNomin" in line:
-                        values = line.split()
-                        item.addorbitdata(values[1], values[2],
-                                          self.unpackEpoch(values[3]), values[4],
-                                          values[5], values[6], values[7],
-                                          values[8], values[9], values[10])
-                        dbline = "  %-19.19s|%-14.14s|%8.6f  |%8f|%8.4f|%8.4f |%8.4f| 2000|%9.4f  |%5.2f|%-5.2f|   0.00\n" % (
-                                  values[0], self.unpackEpoch(values[3]),
-                                  float(values[8]), float(values[10]),
-                                  float(values[7]), float(values[6]),
-                                  float(values[5]), float(values[4]),
-                                  float(values[1]), float(values[2]))
-                        print(dbline)
-                        smalldb = smalldb + dbline
-                        break
+                # g should be populated if we got the orbit data before
+                if item.g == "":
+                    url = "http://scully.cfa.harvard.edu/cgi-bin/showobsorbs.cgi?Obj=" \
+                                    + item.tmpdesig + "&orb=y"
+                    print(url)
+                    data = urllib2.urlopen(url)
+                    for line in data:
+                        if "NEOCPNomin" in line:
+                            values = line.split()
+                            item.addorbitdata(values[1], values[2],
+                                              self.unpackEpoch(values[3]), values[4],
+                                              values[5], values[6], values[7],
+                                              values[8], values[9], values[10])
+                            dbline = "  %-19.19s|%-14.14s|%8.6f  |%8f|%8.4f|%8.4f |%8.4f| 2000|%9.4f  |%5.2f|%-5.2f|   0.00\n" % (
+                                      values[0], self.unpackEpoch(values[3]),
+                                      float(values[8]), float(values[10]),
+                                      float(values[7]), float(values[6]),
+                                      float(values[5]), float(values[4]),
+                                      float(values[1]), float(values[2]))
+                            print(dbline)
+                            smalldb = smalldb + dbline
+                            break
+                else:
+                    # We already have it. Return the db ine
+                    dbline = "  %-19.19s|%-14.14s|%8.6s  |%8s|%8.4s|%8.4s |%8.4s| 2000|%9.4s  |%5.2s|%-5.2s|   0.00\n" % (
+                                  item.tmpdesig, item.epoch, item.e, item.a,
+                                  item.incl, item.node, item.peri, item.m,
+                                  item.h, item.g)
+                    print(dbline)
+                    smalldb = smalldb + dbline
             else: # critlist
                 dbline = "  %-19.19s|%-14.14s|%8.6s  |%8s|%8.4s|%8.4s |%8.4s| 2000|%9.4s  |%5.2s|%-5.2s|   0.00\n" % (
                                   item.tmpdesig, item.epoch, item.e, item.a,
