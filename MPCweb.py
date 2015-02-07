@@ -114,6 +114,7 @@ class MPCweb(object):
         ''' Download orbit data, store it in objects, and return a smalldb.
         '''
         # TODO only go to mpc when we need to.
+        # TODO no seriously this needs to be implemented!
         smalldb = ""
         for item in neocplist:
             if item.type == "neo":

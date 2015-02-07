@@ -3,6 +3,7 @@ import tkFont
 import tkMessageBox
 import ttk
 
+import MPCweb
 from SkyXConnection import SkyxObjectNotFoundError, SkyxConnectionError, SkyXConnection
 
 
@@ -29,8 +30,9 @@ class imagescheduler(object):
         self.initrightframe()
 
     def inittableframe(self):
-        self.tree_columns = ("Target", "Exp (s)", "# Exp", "     RA     ",
-                             "     Dec     ", "     Alt     ", "     Az     ")
+        self.tree_columns = ("    Target    ", "Exp (s)", "# Exp",
+                             "     RA     ", "     Dec     ", "     Alt     ",
+                             "     Az     ")
 
         self.tlist = []
         self.ttable = ttk.Frame(self.frame)
@@ -109,10 +111,11 @@ class imagescheduler(object):
         loadbut.state(['disabled'])
         savebut = ttk.Button(self.rbuttons, text="Save Schedule")
         savebut.state(['disabled'])
-        updateskyxbut = ttk.Button(self.rbuttons, text="Update data from skyx",
-                                   command=self._updateskyxHandler)
+        updateskyxbut = ttk.Button(self.rbuttons, text="Update positions",
+                                   command=self._updatePositionHandler)
         # updateskyxbut.state(['disabled'])
-        loadNEObut = ttk.Button(self.rbuttons, text="Add selected NEOs",
+        loadNEObut = ttk.Button(self.rbuttons, 
+                                text="Add selected Minor Planets",
                                 command=self._addneoHandler)
         autoguide = ttk.Checkbutton(self.rbuttons, text="Use Autoguiding",
                                     variable=self.autoguide)
@@ -166,7 +169,9 @@ class imagescheduler(object):
 
     def _addneoHandler(self, *args):
         for neo in self.neoobj.neocplist:
-            self.ttree.insert('', 'end', values=[neo.tmpdesig, "30", "10"])
+            self.ttree.insert('', 'end', values=[neo.tmpdesig, "30", "10",
+                                                 neo.ra, neo.dec,
+                                                 neo.alt, neo.az])
 
     def _editrowHandler(self, *args):
         item = self.ttree.selection()[0]
@@ -237,14 +242,33 @@ class imagescheduler(object):
                 altfails.append(self.ttree.item(target)['values'][0])
         return(fails, altfails)
 
-    def _updateskyxHandler(self, *args):
+    def _updatePositionHandler(self, *args):
+        ''' Update the positions of our Minor Planets and if necessary from
+            SkyX.'''
+        # TODO a lot of this class assumes that the object is in SkyX. It wont
+        # always be as we dont have an API to add objects so we'll just tell
+        # skyx the ra and dec
         fails = []
         for target in self.ttree.get_children():
+
             try:
                 tname = self.ttree.item(target)['values'][0]
                 texp = self.ttree.item(target)['values'][1]
                 tnum = self.ttree.item(target)['values'][2]
-                [ra, dec, alt, az] = self._updateskyx(tname)
+                # Try to get data from out minor planet list. If it's not there
+                # try TheSkyX
+                
+                mpc = MPCweb.MPCweb()
+                mpc.genSmallDB(self.neoobj.neocplist)
+                try:
+                    # TODO: Call an update 
+                    mptarget = [ l for l in self.neoobj.neocplist 
+                                if tname == l.tmpdesig][0]
+                    mptarget.updateephem()
+                    [ra, dec, alt, az] = [mptarget.ra, mptarget.dec,
+                                          mptarget.alt, mptarget.az]
+                except IndexError:
+                    [ra, dec, alt, az] = self._updateskyx(tname)
             except SkyxObjectNotFoundError:
                 fails.append(self.ttree.item(target)['values'][0])
             except SkyxConnectionError, e:

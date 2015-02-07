@@ -5,7 +5,9 @@ Created on 9 Sep 2014
 '''
 from __future__ import print_function
 
+import datetime
 import math
+import time
 import unittest
 
 import ephem
@@ -24,8 +26,8 @@ class minorplanet(object):
         self.tmpdesig = tmpdesig
         self.score = ""
         self.discovery = ""
-        self.ra = ""
-        self.dec = ""
+        self.ra = "0"
+        self.dec = "0"
         self.v = ""
         self.updated = ""
         self.note = ""
@@ -34,8 +36,8 @@ class minorplanet(object):
         self.h = ""
         self.rate = ""
         self.pa = ""
-        self.alt = ""
-        self.az = ""
+        self.alt = "0"
+        self.az = "0"
         self.angle = ""
         self.rate = ""
         self.g = ""
@@ -119,7 +121,8 @@ class minorplanet(object):
         self.n = n
         self.a = a
 
-    def updateephem(self, timestring):
+    def updateephem(self, 
+                    timestring=datetime.datetime.fromtimestamp(round(time.time()))):
         ''' Update alt/az/ra/dec/rates/mag using pyephem
         '''
         z72 = ephem.Observer()
