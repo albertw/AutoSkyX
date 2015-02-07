@@ -1,11 +1,17 @@
 from Tkinter import N, S, E, W, LEFT, Variable
+import logging
+import math
 import tkFont
 import tkMessageBox
 import ttk
 
+import ephem
+
 import MPCweb
 from SkyXConnection import SkyxObjectNotFoundError, SkyxConnectionError, SkyXConnection
 
+
+logger = logging.getLogger(__name__)
 
 class imagescheduler(object):
 
@@ -141,6 +147,7 @@ class imagescheduler(object):
         exists, check the values are sane in the other fields then add to
         the list.
         '''
+        '''
         try:
             self._updateskyx(self.tname.get())
         except SkyxObjectNotFoundError:
@@ -151,9 +158,10 @@ class imagescheduler(object):
         except SkyxConnectionError:
             # We'll validate the target later before running
             pass
+        '''
         if self.tname.get() and self.texposure.get() and self.tnumexp.get():
             # If it already exists delete it
-            # Really should work out how to edit it in palce to not screw
+            # Really should work out how to edit it in place to not screw
             # up the order
             index = 'end'
             for item in self.ttree.get_children():
@@ -206,8 +214,10 @@ class imagescheduler(object):
             tname = self.ttree.item(target)['values'][0]
             texp = self.ttree.item(target)['values'][1]
             tnum = self.ttree.item(target)['values'][2]
+            ra = self.ttree.item(target)['values'][3]
+            dec = self.ttree.item(target)['values'][4]
             skyx = SkyXConnection()
-            if skyx.closedloopslew(tname):
+            if skyx.closedloopslew(ra +"," + dec):
                 skyx.takeimages(texp, tnum)
 
     def _checkHandler(self):
@@ -265,8 +275,10 @@ class imagescheduler(object):
                     mptarget = [ l for l in self.neoobj.neocplist 
                                 if tname == l.tmpdesig][0]
                     mptarget.updateephem()
-                    [ra, dec, alt, az] = [mptarget.ra, mptarget.dec,
+                    [ra, dec, alt, az] = [math.degrees(mptarget.ra)/15, math.degrees(mptarget.dec),
                                           mptarget.alt, mptarget.az]
+                    logger.debug("RA:" + str(float(ra)))
+                    logger.debug("Dec:" + str(float(dec)))
                 except IndexError:
                     [ra, dec, alt, az] = self._updateskyx(tname)
             except SkyxObjectNotFoundError:

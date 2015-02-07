@@ -2,8 +2,11 @@
 '''
 from __future__ import print_function
 
+import logging
 from socket import socket, AF_INET, SOCK_STREAM, SHUT_RDWR, error
 
+
+logger = logging.getLogger(__name__)
 
 class SkyxObjectNotFoundError(Exception):
     ''' Exception for objects not found in SkyX.
@@ -30,7 +33,7 @@ class SkyxConnectionError(Exception):
 class SkyXConnection(object):
     ''' Class to handle connections to TheSkyX
     '''
-    def __init__(self, host="localhost", port=3040):
+    def __init__(self, host="192.168.1.123", port=3040):
         ''' define host and port for TheSkyX.
         '''
         self.host = host
@@ -40,11 +43,13 @@ class SkyXConnection(object):
         ''' sends a js script to TheSkyX and returns the output.
         '''
         try:
+            logger.debug(command)
             sockobj = socket(AF_INET, SOCK_STREAM)
             sockobj.connect((self.host, self.port))
-            sockobj.send(bytes('\* Java Script *\\n\* Socket Start Packet *\\n'
-                                + command + '\n\* Socket End Packet *\\n'))
+            sockobj.send(bytes('/* Java Script */\n/* Socket Start Packet */\n'
+                                + command + '\n/* Socket End Packet */\n'))
             oput = sockobj.recv(2048)
+            logger.debug(oput)
             sockobj.shutdown(SHUT_RDWR)
             sockobj.close()
             return oput
