@@ -275,10 +275,9 @@ class imagescheduler(object):
                     mptarget = [ l for l in self.neoobj.neocplist 
                                 if tname == l.tmpdesig][0]
                     mptarget.updateephem()
-                    [ra, dec, alt, az] = [math.degrees(mptarget.ra)/15, math.degrees(mptarget.dec),
+                    [ra, dec, alt, az] = [math.degrees(mptarget.ra)/15, 
+                                          math.degrees(mptarget.dec),
                                           mptarget.alt, mptarget.az]
-                    logger.debug("RA:" + str(float(ra)))
-                    logger.debug("Dec:" + str(float(dec)))
                 except IndexError:
                     [ra, dec, alt, az] = self._updateskyx(tname)
             except SkyxObjectNotFoundError:

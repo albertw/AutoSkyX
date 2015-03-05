@@ -3,10 +3,11 @@
     Basic idea found in
     http://www.mindviewinc.com/Books/Python3Patterns/Index.php
 '''
-from __future__ import print_function
-
+import logging
 import unittest
 import serial
+
+log = logging.getLogger(__name__)
 
 class ArduinoUnparseableOutput(Exception):
     ''' Exception for when received lines from the arduino do not
@@ -47,10 +48,10 @@ class Arduino(object):
             lines.
         '''
         self.com_port = serialport
-        print(self.com_port)
+        log.debug("Com port" + str(self.com_port))
         self.ser = serial.Serial(self.com_port, 9600)
-        print(self.ser.readline())
-        print(self.ser.readline())
+        log.debug(self.ser.readline())
+        log.debug(self.ser.readline())
 
     def isconnected(self):
         if self.ser:

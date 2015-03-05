@@ -5,6 +5,7 @@
 
 from Tkinter import N, S, E, W, StringVar, Tk
 import datetime
+import logging
 import math
 from random import randint
 import subprocess
@@ -12,6 +13,9 @@ import sys
 import socket
 import select
 import ttk
+
+log = logging.getLogger(__name__)
+templog = logging.getLogger('CloudData')
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -187,9 +191,9 @@ class CloudSensor(object):
                 mesg = self.socket.recv(32).strip('\0')
                 self.socket.close()
             except Exception as msg:
-                print ("client exception: " +  str(msg))
+                log.error("client exception: " +  str(msg))
             if mesg == None:
-                print "Didn't get a response from the server..."
+                log.warning("Didn't get a response from the server...")
                 self.frame.after(polldelay, self.updatetmp)
                 return
             else:
@@ -198,12 +202,10 @@ class CloudSensor(object):
                 self.skytmphist.append(int(b))
                 self.ambtmphist.append(int(c))
         else:
-            print self.uno.isconnected()
+            log.debug("Arduino is connected? " + str(self.uno.isconnected()))
             if self.uno.isconnected() == True:
                 # Add workaround for 1037.55
                 newtmp, anewtmp = self.uno.get_temperatures()
-                print newtmp
-                print anewtmp
                 if newtmp == '1037.55':
                     try:
                         self.skytmphist.append(self.skytmphist[-1])
@@ -218,9 +220,12 @@ class CloudSensor(object):
                         self.ambtmphist.append('0')
                 else:
                     self.ambtmphist.append(anewtmp)
+                templog.debug("sky=" + str(newtmp) + ":ambient=" + str(anewtmp))
+
             else:
                 newtmp = randint(0, 100)
                 anewtmp = randint(0, 100)
+                templog.debug("sky=" + str(newtmp) + ":ambient=" + str(anewtmp))
                 self.skytmphist.append(newtmp)
                 self.ambtmphist.append(anewtmp)
             tnow = datetime.datetime.now()
@@ -229,7 +234,7 @@ class CloudSensor(object):
         self.ambtemp.config(text=str(self.ambtmphist[-1]))
         self.__updateplot()
         if (float(self.skytmphist[-1]) > float((self.threshold.get()))) and not self.mute:
-            print "BEEEEEEEPPPPPP"
+            log.debug("BEEEEEEEPPPPPP")
             if sys.platform == 'darwin':
                 audio_file = "Siren_Noise.wav"
                 subprocess.Popen(["afplay " + audio_file], shell=True,
@@ -263,7 +268,7 @@ class CloudSensor(object):
                     client_socket, address = self.socket.accept()
                     client_socket.send(cstring)
             except Exception as msg:
-                print ("exception1: " +  str(msg))
+                log.error("exception1: " +  str(msg))
             self.frame.after(serverdelay, self.network)
 
 if __name__ == "__main__":

@@ -2,6 +2,10 @@
 '''
 from Tkinter import N, S, E, W, Tk, FALSE, Menu
 import logging
+import logging.config
+logging.config.fileConfig('config.ini')
+logger = logging.getLogger(__name__)
+
 import ttk
 
 from arduinogui import ArduinoGUI
@@ -10,16 +14,6 @@ import cloudsensor
 import focuser
 import imagescheduler
 import neocphelper
-
-
-logger = logging.getLogger()
-
-logger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-ch.setFormatter(formatter)
-logger.addHandler(ch)
 
 # Set up the root window
 root = Tk()
@@ -70,5 +64,5 @@ n.grid_columnconfigure(0, weight=1)
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
 root.config(menu=menubar)
-
+logger.debug("Starting.")
 root.mainloop()

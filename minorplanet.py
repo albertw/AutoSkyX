@@ -3,7 +3,6 @@ Created on 9 Sep 2014
 
 @author: Albert
 '''
-from __future__ import print_function
 
 import datetime
 import logging
@@ -263,9 +262,9 @@ Date       UT   *  R.A. (J2000) Decl.  Elong.  V        Motion     Object     Su
        
     def test_target_ra_j2000(self):
         
-        print(self.observer.date.tuple())
-        print(self.target.ra)
-        print(self.target.dec)
+        logger.debug(self.observer.date.tuple())
+        logger.debug(self.target.ra)
+        logger.debug(self.target.dec)
         self.assertEqual(str(self.targetj2000.ra), "4:04:21.28",
                         "Target RA is not expected value 4:04:21.28:" +
                         str(self.targetj2000.ra))

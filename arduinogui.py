@@ -1,6 +1,5 @@
 ''' Module to handle the motorised focuser via an Arduino
 '''
-from __future__ import print_function
 
 from Tkinter import N, S, E, W, HORIZONTAL, StringVar, Tk
 import ttk

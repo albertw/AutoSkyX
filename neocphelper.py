@@ -3,6 +3,7 @@
 
 from Tkinter import StringVar, N, S, E, W, LEFT
 import datetime
+import logging
 import time
 from tkFileDialog import asksaveasfilename
 import tkFont
@@ -14,6 +15,7 @@ import ephem
 
 import MPCweb
 
+log = logging.getLogger(__name__)
 
 class neocp(object):
     ''' Class for the neocp helper notebook
@@ -109,6 +111,8 @@ class neocp(object):
         ''' Handler to download the list of objects from the NEOCP and display
             them in the list.
         '''
+        #logging.debug("Downloading NEO data.")
+        log.debug("Downloading NEO data.")
         try:
             mpc = MPCweb.MPCweb()
             self.neocplist.extend(mpc.getneocp())
@@ -118,8 +122,10 @@ class neocp(object):
             for item in self.neocplist:
                 self.neocptree.insert('', 'end', values=item.neolist())
         except urllib2.URLError, errmsg:
-            tkMessageBox.showinfo("NEOCP Error", "Can't get NEOCP data:\n" +
-                                  str(errmsg) + "\n Check you are online.")
+            mesg = "Can't get NEOCP data:\n" + str(errmsg) +\
+                   "\n Check you are online."
+            log.error(mesg)
+            tkMessageBox.showinfo("NEOCP Error", mesg)
 
     def getCritsHandler(self):
         ''' Handler to get the Critical list.
@@ -136,8 +142,10 @@ class neocp(object):
             for item in self.neocplist:
                 self.neocptree.insert('', 'end', values=item.neolist())
         except urllib2.URLError, errmsg:
-            tkMessageBox.showinfo("Critlist Error", "Can't get Critlist data:\n" +
-                                  str(errmsg) + "\n Check you are online.")
+            mesg = "Can't get Critlist data:\n" + str(errmsg) +\
+                   "\n Check you are online."
+            log.error(mesg)
+            tkMessageBox.showinfo("Critlist Error", mesg)
             
     def sortby(self, tree, col, descending):
         """Sort tree contents when a column is clicked on."""
@@ -179,8 +187,10 @@ class neocp(object):
             mpc = MPCweb.MPCweb()
             self.smalldb = mpc.genSmallDB(self.neocplist)
         except urllib2.URLError, errmsg:
-            tkMessageBox.showinfo("MPC Error", "Can't get orbit data:\n" +
-                                  str(errmsg) + "\n Check you are online.")
+            mesg = "Can't get orbit data:\n" + str(errmsg) +\
+                   "\n Check you are online."
+            log.error(mesg)
+            tkMessageBox.showinfo("MPC Error", mesg)
 
     def gensmalldbHandler(self):
         ''' Generate and save the small asteroid database for TheSkyX.
@@ -195,8 +205,10 @@ class neocp(object):
             smdbf.write(self.smalldb)
             smdbf.close()
         except urllib2.URLError, errmsg:
-            tkMessageBox.showinfo("MPC Error", "Can't get orbit data:\n" +
-                                  str(errmsg) + "\n Check you are online.")
+            mesg = "Can't get orbit data:\n" + str(errmsg) +\
+                   "\n Check you are online."
+            log.error(mesg)
+            tkMessageBox.showinfo("MPC Error", mesg)
 
     def genfodbHandler(self):
         ''' Handler to save the targets in findorb format.
@@ -209,9 +221,10 @@ class neocp(object):
             fof.write(fodb)
             fof.close()
         except urllib2.URLError, errmsg:
-            tkMessageBox.showerror("MPC Error",
-                                   "Can't get observations data:\n" +
-                                   str(errmsg) + "\n Check you are online.")
+            mesg = "Can't get observations data:\n" + str(errmsg) +\
+                   "\n Check you are online."
+            log.error(mesg)
+            tkMessageBox.showerror("MPC Error", mesg)
 
     def updatepositionsHandler(self):
         ''' Handler to update the positions of the targets for the selected
@@ -220,9 +233,9 @@ class neocp(object):
         try:
             ephem.Date(self.timestring.get())
         except ValueError:
-            tkMessageBox.showerror(title="Date Error",
-                                   message="Please enter the Date and time " +
-                                   "in the correct format.")
+            mesg = "Please enter the Date and time in the correct format."
+            log.error(mesg)
+            tkMessageBox.showerror(title="Date Error", message=mesg)
             return
         mpc = MPCweb.MPCweb()
         self.smalldb = mpc.genSmallDB(self.neocplist)

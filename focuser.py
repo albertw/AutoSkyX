@@ -1,13 +1,14 @@
 ''' Module to handle the motorised focuser via an Arduino
 '''
-from __future__ import print_function
 
+import logging
 from Tkinter import N, S, E, W, HORIZONTAL, StringVar, Tk
 import ttk
 import tkMessageBox
 
 import arduino
 
+log = logging.getLogger(__name__)
 
 class Focuser(object):
     ''' Class to handle the user interface for interfacing with the focuser
@@ -92,17 +93,17 @@ class Focuser(object):
         self.uno.send_char("w")
 
     def __pulse_reverse(self):
-        print(self.uno.set_speed(self.speed_slider.get()))
-        print(self.uno.set_pulse_duration(self.pulse_slider.get()))
-        print(self.uno.send_char("e"))
+        log.debug(self.uno.set_speed(self.speed_slider.get()))
+        log.debug(self.uno.set_pulse_duration(self.pulse_slider.get()))
+        log.debug(self.uno.send_char("e"))
 
     def __motor_off(self, *args):
         self.uno.send_char("r")
 
     def __pulse_forward(self):
-        print(self.uno.set_speed(self.speed_slider.get()))
-        print(self.uno.set_pulse_duration(self.pulse_slider.get()))
-        print(self.uno.send_char("t"))
+        log.debug(self.uno.set_speed(self.speed_slider.get()))
+        log.debug(self.uno.set_pulse_duration(self.pulse_slider.get()))
+        log.debug(self.uno.send_char("t"))
 
     def __click_forward(self, *args):
         self.uno.send_char("y")
