@@ -47,10 +47,13 @@ class MPCweb(object):
             logger.debug(line)
             logger.debug(res.group(2))
             crit = minorplanet.minorplanet(res.group(1).strip(), mptype="mp") 
-            logger.debug(res.group(2))
+            logger.debug(res.group(2)+" "+ res.group(3)+" "+
+                            res.group(4)+" "+ res.group(5)+" "+  res.group(6)+" "+ 
+                            res.group(7)+" "+  res.group(9)+" "+ 
+                            res.group(10)+" "+  res.group(11))
             crit.addcritprops(res.group(2), res.group(3),
                             res.group(4), res.group(5), res.group(6),
-                            res.group(8), res.group(9),
+                            res.group(7), res.group(9),
                             res.group(10), res.group(11))
             crits.append(crit)
         return crits
@@ -149,10 +152,13 @@ class MPCweb(object):
                     logger.debug(dbline)
                     smalldb = smalldb + dbline
             else: # critlist
-                dbline = "  %-19.19s|%-14.14s|%8.6s  |%8s|%8.4s|%8.4s |%8.4s| 2000|%9.4s  |%5.2s|%-5.2s|   0.00\n" % (
-                                  item.tmpdesig, item.epoch, item.e, item.a,
-                                  item.incl, item.node, item.peri, item.m,
-                                  item.h, item.g)
+                dbline = "  %-19.19s|%-14.14s|%8.6f  |%8f|%8.4f|%8.4f |%8.4f| 2000|%9.4f  |%5.2f|%-5.2f|   0.00\n" % (
+                                  item.tmpdesig, item.epoch, float(item.e),
+                                  float(item.a), float(item.incl), 
+                                  float(item.node), float(item.peri),
+                                  float(item.m), float(item.h), float(item.g))
+                logger.debug(item.peri)
+                logger.debug(type(item.peri))
                 logger.debug(dbline)
                 smalldb = smalldb + dbline
                         

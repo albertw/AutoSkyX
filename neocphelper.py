@@ -197,11 +197,14 @@ class neocp(object):
             TODO: Check this still works correctly as we delete/add objects
         '''
         try:
-            if self.smalldb != None:
+            if self.smalldb == None:
+                log.debug("creating smalldb")
                 mpc = MPCweb.MPCweb()
                 self.smalldb = mpc.genSmallDB(self.neocplist)
             filename = asksaveasfilename()
             smdbf = open(filename, 'w')
+            log.debug("writing to: " + str(filename))
+            log.debug("smalldb: " + str(self.smalldb))
             smdbf.write(self.smalldb)
             smdbf.close()
         except urllib2.URLError, errmsg:
