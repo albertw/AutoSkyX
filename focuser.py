@@ -10,6 +10,7 @@ import arduino
 
 log = logging.getLogger(__name__)
 
+
 class Focuser(object):
     ''' Class to handle the user interface for interfacing with the focuser
         via the arduino.

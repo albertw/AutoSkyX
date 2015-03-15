@@ -34,6 +34,7 @@ polldelay = 2000
 offdelay = 500
 serverdelay = 100
 
+
 class CloudSensor(object):
     ''' Cloud sensor notebook object'''
     def __init__(self, frame):
@@ -153,11 +154,11 @@ class CloudSensor(object):
         self.skytmphist = []
         self.ambtmphist = []
         self.timearray = []
-        
+
     def __stopbutton(self):
         ''' Private function to toggle stop and start and change button text.
         '''
-        if self.stop == False:
+        if self.stop is False:
             self.stop = True
             self.stopbutton.config(text='Start')
         else:
@@ -167,7 +168,7 @@ class CloudSensor(object):
     def __mutebutton(self):
         ''' Private function to toggle mute and change button text
         '''
-        if self.mute == False:
+        if self.mute is False:
             self.mute = True
             self.mutebutton.config(text='Unmute')
         else:
@@ -183,7 +184,7 @@ class CloudSensor(object):
             return
         if 'Client' in self.csmode.get():
             try:
-                if self.socket != None:
+                if self.socket is not None:
                     self.socket.close()
                     self.socket = None
                 self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -191,8 +192,8 @@ class CloudSensor(object):
                 mesg = self.socket.recv(32).strip('\0')
                 self.socket.close()
             except Exception as msg:
-                log.error("client exception: " +  str(msg))
-            if mesg == None:
+                log.error("client exception: " + str(msg))
+            if mesg is None:
                 log.warning("Didn't get a response from the server...")
                 self.frame.after(polldelay, self.updatetmp)
                 return
@@ -248,12 +249,12 @@ class CloudSensor(object):
             or do nothing.
         '''
         mode = self.csmode.get()
-        #print mode
+        # print mode
         if 'Off' in mode:
             self.frame.after(offdelay, self.network)
             return
         elif 'Server' in mode:
-            if self.socket == None:
+            if self.socket is None:
                 self.socket = socket.socket(
                             socket.AF_INET, socket.SOCK_STREAM)
                 self.socket.bind((socket.gethostname(), 8001))
@@ -268,7 +269,7 @@ class CloudSensor(object):
                     client_socket, address = self.socket.accept()
                     client_socket.send(cstring)
             except Exception as msg:
-                log.error("exception1: " +  str(msg))
+                log.error("exception1: " + str(msg))
             self.frame.after(serverdelay, self.network)
 
 if __name__ == "__main__":

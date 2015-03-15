@@ -12,9 +12,11 @@ logger = logging.getLogger(__name__)
 
 class MPCweb(object):
 
-    def __init__(self, pcp="http://www.minorplanetcenter.net/iau/NEO/pccp.txt",
-                 neocp="http://www.minorplanetcenter.net/iau/NEO/neocp.txt",
-                 crits="http://www.minorplanetcenter.net/iau/Ephemerides/CritList/Soft06CritList.txt"):
+    def __init__(
+            self,
+            pcp="http://www.minorplanetcenter.net/iau/NEO/pccp.txt",
+            neocp="http://www.minorplanetcenter.net/iau/NEO/neocp.txt",
+            crits="http://www.minorplanetcenter.net/iau/Ephemerides/CritList/Soft06CritList.txt"):
         self.pcp = pcp
         self.neocp = neocp
         self.crits = crits
@@ -41,7 +43,8 @@ class MPCweb(object):
 
     def getcrits(self):
         data = urllib2.urlopen(self.crits)
-        regex = re.compile("^(.{21})\|(.{14})\|(.{10})\|(.{8})\|(.{8})\|(.{9})\|(.{9})\|(.{5})\|(.{10})\|(.{5})\|(.{5})")
+        regex = re.compile(
+            "^(.{21})\|(.{14})\|(.{10})\|(.{8})\|(.{8})\|(.{9})\|(.{9})\|(.{5})\|(.{10})\|(.{5})\|(.{5})")
         crits = []
         for line in data:
             res = regex.match(line)
@@ -63,7 +66,7 @@ class MPCweb(object):
         findorbdb = ""
         for item in neocplist:
             url = "http://scully.cfa.harvard.edu/cgi-bin/showobsorbs.cgi?Obj="\
-                            + item.tmpdesig + "&obs=y"
+                + item.tmpdesig + "&obs=y"
             data = urllib2.urlopen(url)
             for line in data:
                 if "html" not in line:
@@ -122,8 +125,8 @@ class MPCweb(object):
             if item.type == "neo":
                 # g should be populated if we got the orbit data before
                 if item.g == "":
-                    url = "http://scully.cfa.harvard.edu/cgi-bin/showobsorbs.cgi?Obj=" \
-                                    + item.tmpdesig + "&orb=y"
+                    url = "http://scully.cfa.harvard.edu/cgi-bin/showobsorbs.cgi?Obj=" + \
+                        item.tmpdesig + "&orb=y"
                     logger.debug(url)
                     data = urllib2.urlopen(url)
                     for line in data:
@@ -135,28 +138,28 @@ class MPCweb(object):
                                               values[7], values[8], values[9],
                                               values[10])
                             dbline = "  %-19.19s|%-14.14s|%8.6f  |%8f|%8.4f|%8.4f |%8.4f| 2000|%9.4f  |%5.2f|%-5.2f|   0.00\n" % (
-                                      values[0], self.unpackEpoch(values[3]),
-                                      float(values[8]), float(values[10]),
-                                      float(values[7]), float(values[6]),
-                                      float(values[5]), float(values[4]),
-                                      float(values[1]), float(values[2]))
+                                values[0], self.unpackEpoch(values[3]),
+                                float(values[8]), float(values[10]),
+                                float(values[7]), float(values[6]),
+                                float(values[5]), float(values[4]),
+                                float(values[1]), float(values[2]))
                             logger.debug(dbline)
                             smalldb = smalldb + dbline
                             break
                 else:
                     # We already have it. Return the db ine
                     dbline = "  %-19.19s|%-14.14s|%8.6s  |%8s|%8.4s|%8.4s |%8.4s| 2000|%9.4s  |%5.2s|%-5.2s|   0.00\n" % (
-                                  item.tmpdesig, item.epoch, item.e, item.a,
-                                  item.incl, item.node, item.peri, item.m,
-                                  item.h, item.g)
+                        item.tmpdesig, item.epoch, item.e, item.a,
+                        item.incl, item.node, item.peri, item.m,
+                        item.h, item.g)
                     logger.debug(dbline)
                     smalldb = smalldb + dbline
             else:  # critlist
                 dbline = "  %-19.19s|%-14.14s|%8.6f  |%8f|%8.4f|%8.4f |%8.4f| 2000|%9.4f  |%5.2f|%-5.2f|   0.00\n" % (
-                                  item.tmpdesig, item.epoch, float(item.e),
-                                  float(item.a), float(item.incl),
-                                  float(item.node), float(item.peri),
-                                  float(item.m), float(item.h), float(item.g))
+                    item.tmpdesig, item.epoch, float(item.e),
+                    float(item.a), float(item.incl),
+                    float(item.node), float(item.peri),
+                    float(item.m), float(item.h), float(item.g))
                 logger.debug(item.peri)
                 logger.debug(type(item.peri))
                 logger.debug(dbline)

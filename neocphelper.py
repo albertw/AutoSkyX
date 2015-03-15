@@ -17,13 +17,14 @@ import MPCweb
 
 log = logging.getLogger(__name__)
 
+
 class neocp(object):
     ''' Class for the neocp helper notebook
     '''
 
     def __init__(self, frame):
         self.frame = frame
-        self.tree_columns = ("      Designation      ", "Score", 
+        self.tree_columns = ("      Designation      ", "Score",
                              "    Discovery    ", "      R.A.     ",
                              "     Decl.     ", "   Alt.   ", "   Az.   ",
                              "   Angle   ", "   Rate   ", "    V    ",
@@ -78,7 +79,8 @@ class neocp(object):
         # List
         self.neocptree = ttk.Treeview(self.content, columns=self.tree_columns,
                                       show="headings",
-                                      displaycolumns=[0, 10, 3, 4, 5, 6, 7, 8, 9, 11, 12])
+                                      displaycolumns=[0, 10, 3, 4, 5, 6, 7, 8,
+                                                      9, 11, 12])
         vsb = ttk.Scrollbar(orient="vertical", command=self.neocptree.yview)
         self.neocptree.configure(yscrollcommand=vsb.set)
         self.neocptree.grid(columnspan=4, column=0, row=0,
@@ -88,7 +90,8 @@ class neocp(object):
         # we've already spaced out
         for col in self.tree_columns:
             self.neocptree.heading(col, text=col.title(),
-                                   command=lambda c=col: self.sortby(self.neocptree, c, 0))
+                                   command=lambda c=col: self.sortby(
+                                        self.neocptree, c, 0))
             self.neocptree.column(col,
                                   width=tkFont.Font().measure(col.title()) + 5)
 
@@ -103,7 +106,7 @@ class neocp(object):
                              command=self.deleteRowsHandler)
         delrows.grid(column=2, row=1, sticky=(E))
         delall = ttk.Button(self.content, text="Delete all",
-                             command=self.deleteAllHandler)
+                            command=self.deleteAllHandler)
         delall.grid(column=3, row=1, sticky=(E))
         self.neocptree.grid(column=0, row=0, sticky=(N, W, E, S))
 
@@ -111,7 +114,7 @@ class neocp(object):
         ''' Handler to download the list of objects from the NEOCP and display
             them in the list.
         '''
-        #logging.debug("Downloading NEO data.")
+        # logging.debug("Downloading NEO data.")
         log.debug("Downloading NEO data.")
         try:
             mpc = MPCweb.MPCweb()
@@ -146,7 +149,7 @@ class neocp(object):
                    "\n Check you are online."
             log.error(mesg)
             tkMessageBox.showinfo("Critlist Error", mesg)
-            
+
     def sortby(self, tree, col, descending):
         """Sort tree contents when a column is clicked on."""
         # grab values to sort
@@ -172,7 +175,7 @@ class neocp(object):
             self.neocplist = ([x for x in self.neocplist
                                if x.tmpdesig != tmpdesig])
             self.neocptree.delete(item)
-            
+
     def deleteAllHandler(self):
         ''' Clear the list'''
         for item in self.neocptree.get_children():
@@ -197,7 +200,7 @@ class neocp(object):
             TODO: Check this still works correctly as we delete/add objects
         '''
         try:
-            if self.smalldb == None:
+            if self.smalldb is None:
                 log.debug("creating smalldb")
                 mpc = MPCweb.MPCweb()
                 self.smalldb = mpc.genSmallDB(self.neocplist)
@@ -243,7 +246,7 @@ class neocp(object):
         mpc = MPCweb.MPCweb()
         self.smalldb = mpc.genSmallDB(self.neocplist)
         for target in self.neocplist:
-            #target.updateskyxinfo()
+            # target.updateskyxinfo()
             # TODO we should only get the new data on a per object level
             target.updateephem(self.timestring.get())
         # Repopulate the tree
@@ -251,6 +254,7 @@ class neocp(object):
             self.neocptree.delete(item)
         for item in self.neocplist:
             self.neocptree.insert('', 'end', values=item.neolist())
+
 
 def remove_dups(mplist):
     newlist = []

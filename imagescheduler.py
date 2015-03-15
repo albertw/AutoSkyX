@@ -13,6 +13,7 @@ from SkyXConnection import SkyxObjectNotFoundError, SkyxConnectionError, SkyXCon
 
 logger = logging.getLogger(__name__)
 
+
 class imagescheduler(object):
 
     def __init__(self, frame, neoobj):
@@ -48,7 +49,6 @@ class imagescheduler(object):
         self.ttable.columnconfigure(0, weight=3)
         self.ttable.rowconfigure(0, weight=3)
 
-
         # List
         self.ttree = ttk.Treeview(self.ttable, columns=self.tree_columns,
                                   show="headings")
@@ -61,7 +61,8 @@ class imagescheduler(object):
         # already spaced out
         for col in self.tree_columns:
             self.ttree.heading(col, text=col.title())
-            self.ttree.column(col, width=tkFont.Font().measure(col.title()) + 5)
+            self.ttree.column(col,
+                              width=tkFont.Font().measure(col.title()) + 5)
 
         delrows = ttk.Button(self.ttable, text="Delete rows",
                              command=self._deleteHandler)
@@ -120,13 +121,14 @@ class imagescheduler(object):
         updateskyxbut = ttk.Button(self.rbuttons, text="Update positions",
                                    command=self._updatePositionHandler)
         # updateskyxbut.state(['disabled'])
-        loadNEObut = ttk.Button(self.rbuttons, 
+        loadNEObut = ttk.Button(self.rbuttons,
                                 text="Add selected Minor Planets",
                                 command=self._addneoHandler)
         autoguide = ttk.Checkbutton(self.rbuttons, text="Use Autoguiding",
                                     variable=self.autoguide)
         autoguide.state(['disabled'])
-        closedloop = ttk.Checkbutton(self.rbuttons, text="Use Closed Loop Slew",
+        closedloop = ttk.Checkbutton(self.rbuttons,
+                                     text="Use Closed Loop Slew",
                                      variable=self.closedloop)
         closedloop.state(['disabled'])
 
@@ -217,7 +219,7 @@ class imagescheduler(object):
             ra = self.ttree.item(target)['values'][3]
             dec = self.ttree.item(target)['values'][4]
             skyx = SkyXConnection()
-            if skyx.closedloopslew(ra +"," + dec):
+            if skyx.closedloopslew(ra + "," + dec):
                 skyx.takeimages(texp, tnum)
 
     def _checkHandler(self):
@@ -230,7 +232,8 @@ class imagescheduler(object):
             tkMessageBox.showinfo(message="Can't get data for: " + str(fails))
             return(False)
         elif altfails:
-            tkMessageBox.showinfo(message="Targets are below horizon: " + str(altfails))
+            tkMessageBox.showinfo(message="Targets are below horizon: " +
+                                  str(altfails))
         else:
             tkMessageBox.showinfo(message="All targets OK")
             return (True)
@@ -267,15 +270,15 @@ class imagescheduler(object):
                 tnum = self.ttree.item(target)['values'][2]
                 # Try to get data from out minor planet list. If it's not there
                 # try TheSkyX
-                
+
                 mpc = MPCweb.MPCweb()
                 mpc.genSmallDB(self.neoobj.neocplist)
                 try:
-                    # TODO: Call an update 
-                    mptarget = [ l for l in self.neoobj.neocplist 
+                    # TODO: Call an update
+                    mptarget = [l for l in self.neoobj.neocplist
                                 if tname == l.tmpdesig][0]
                     mptarget.updateephem()
-                    [ra, dec, alt, az] = [math.degrees(mptarget.ra)/15, 
+                    [ra, dec, alt, az] = [math.degrees(mptarget.ra)/15,
                                           math.degrees(mptarget.dec),
                                           mptarget.alt, mptarget.az]
                 except IndexError:
@@ -298,7 +301,6 @@ class imagescheduler(object):
                                                      round(float(az), 2)])
         if fails:
             tkMessageBox.showinfo(message="Can't find targets: " + str(fails))
-
 
     def _updateskyx(self, target):
         skyx = SkyXConnection()

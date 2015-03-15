@@ -8,6 +8,7 @@ from socket import socket, AF_INET, SOCK_STREAM, SHUT_RDWR, error
 
 logger = logging.getLogger(__name__)
 
+
 class SkyxObjectNotFoundError(Exception):
     ''' Exception for objects not found in SkyX.
     '''
@@ -15,9 +16,11 @@ class SkyxObjectNotFoundError(Exception):
         ''' init'''
         super(SkyxObjectNotFoundError, self).__init__(value)
         self.value = value
+
     def __str__(self):
         ''' returns the error string '''
         return repr(self.value)
+
 
 class SkyxConnectionError(Exception):
     ''' Exception for Failures to Connect to SkyX
@@ -26,9 +29,11 @@ class SkyxConnectionError(Exception):
         ''' init'''
         super(SkyxConnectionError, self).__init__(value)
         self.value = value
+
     def __str__(self):
         ''' returns the error string '''
         return repr(self.value)
+
 
 class SkyXConnection(object):
     ''' Class to handle connections to TheSkyX
@@ -46,8 +51,9 @@ class SkyXConnection(object):
             logger.debug(command)
             sockobj = socket(AF_INET, SOCK_STREAM)
             sockobj.connect((self.host, self.port))
-            sockobj.send(bytes('/* Java Script */\n/* Socket Start Packet */\n'
-                                + command + '\n/* Socket End Packet */\n'))
+            sockobj.send(bytes('/* Java Script */\n' +
+                               '/* Socket Start Packet */\n' + command +
+                               '\n/* Socket End Packet */\n'))
             oput = sockobj.recv(2048)
             logger.debug(oput)
             sockobj.shutdown(SHUT_RDWR)
@@ -156,7 +162,6 @@ class SkyXConnection(object):
                 results[info] = val
         return results
 
-
     def test1(self):
         ''' basic test
         '''
@@ -188,5 +193,3 @@ for (p=0;p<PropCnt;++p)
 if __name__ == "__main__":
     xconn = SkyXConnection()
     print(xconn.sky6ObjectInformation("Saturn"))
-
-

@@ -39,16 +39,17 @@ class ArduinoGUI(object):
         self.com['values'] = ('COM3', 'COM6', 'COM7', 'COM8', 'COM9')
         self.com.current(2)
         self.com.grid(column=1, row=0)
-        self.connect  = ttk.Button(comframe, text="Connect", command=self.__connect)
+        self.connect = ttk.Button(comframe, text="Connect",
+                                  command=self.__connect)
         self.connect.grid(column=2, row=0)
-        
+
     def __connect(self):
-        ''' Get the com port and call connect or disconnect if we are already 
+        ''' Get the com port and call connect or disconnect if we are already
             connected
         '''
         if self.uno.isconnected():
             self.uno.disconnect()
-            self.connect.config(text="Connect")    
+            self.connect.config(text="Connect")
         else:
             try:
                 self.uno.connect(self.comport.get())
@@ -56,8 +57,8 @@ class ArduinoGUI(object):
             except OSError, errmsg:
                 tkMessageBox.showinfo("Arduino Error", str(errmsg) +
                                       "\nHint: Check the com port your " +
-                                      "arduino is attached to.")          
-        
+                                      "arduino is attached to.")
+
 
 if __name__ == "__main__":
     ROOT = Tk()

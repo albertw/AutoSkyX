@@ -9,6 +9,7 @@ import serial
 
 log = logging.getLogger(__name__)
 
+
 class ArduinoUnparseableOutput(Exception):
     ''' Exception for when received lines from the arduino do not
         start with "ARDUINO:".
@@ -20,9 +21,11 @@ class ArduinoUnparseableOutput(Exception):
         ''' init'''
         super(ArduinoUnparseableOutput, self).__init__(value)
         self.value = value
+
     def __str__(self):
         ''' returns the error string '''
         return repr(self.value)
+
 
 class Singleton(object):
     ''' Singleton class '''
@@ -30,11 +33,13 @@ class Singleton(object):
         ''' Initiator '''
         self.klass = klass
         self.instance = None
+
     def __call__(self, *args, **kwds):
         ''' When called as a function return our singleton instance. '''
-        if self.instance == None:
+        if self.instance is None:
             self.instance = self.klass(*args, **kwds)
         return self.instance
+
 
 @Singleton
 class Arduino(object):
@@ -58,14 +63,14 @@ class Arduino(object):
             return True
         else:
             return False
-        
+
     def disconnect(self):
         ''' Disconnect serial connection to arduino.
         '''
         # TODO disabled for now by defaults
-        #self.ser.close()
+        # self.ser.close()
         pass
-    
+
     def __get_serial_line(self):
         ''' Read a line from the serial port. Raise exception if it does
             not start with the string "ARDUINO:".
@@ -122,6 +127,7 @@ class Arduino(object):
         output = self.__get_serial_line()
         return output
 
+
 class TestArduinoSingleton(unittest.TestCase):
     ''' Test class to just check that the singleton is working.
     '''
@@ -145,6 +151,7 @@ class TestArduinoSingleton(unittest.TestCase):
         testb = Arduino()
         testb.com_port = "COM2"
         self.assertEqual(testa.com_port, "COM2")
+
 
 class TestArduino(unittest.TestCase):
     ''' Test class to check the arduino.
