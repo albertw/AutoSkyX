@@ -1,3 +1,5 @@
+''' Mpdule to interface with the MPC website
+'''
 
 import logging
 import pprint
@@ -11,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 class MPCweb(object):
+    ''' Class to interface with the MPC website
+    '''
 
     def __init__(self, pcp="http://www.minorplanetcenter.net/iau/NEO/pccp.txt",
                  neocp="http://www.minorplanetcenter.net/iau/NEO/neocp.txt",
@@ -19,27 +23,33 @@ class MPCweb(object):
         self.neocp = neocp
         self.crits = crits
 
-    def getpcp(self):
+    def get_pcp(self):
+        ''' Get the Potential Comet data.
+        '''
         data = urllib2.urlopen(self.pcp)
         for line in data:
             logger.debug(line)
 
-    def getneocp(self):
+    def get_neocp(self):
+        ''' Get the NEOCP data
+        '''
         data = urllib2.urlopen(self.neocp)
         regex = re.compile("^(.{7}) (.{3}) (.{12}) (.{8}) (.{8}) (.{4})" +
                            " (.{22}) (.{7}) (.{3})  (.{5}) (.{4})")
-        neos = []
+        my_neos = []
         for line in data:
             res = regex.match(line)
-            neo = minorplanet.minorplanet(res.group(1).strip())
-            neo.addneoprops(res.group(2), res.group(3),
-                            res.group(4), res.group(5), res.group(6),
-                            res.group(7), res.group(8), res.group(9),
-                            res.group(10), res.group(11))
-            neos.append(neo)
-        return neos
+            my_neo = minorplanet.minorplanet(res.group(1).strip())
+            my_neo.addneoprops(res.group(2), res.group(3),
+                               res.group(4), res.group(5), res.group(6),
+                               res.group(7), res.group(8), res.group(9),
+                               res.group(10), res.group(11))
+            my_neos.append(my_neo)
+        return my_neos
 
-    def getcrits(self):
+    def get_crits(self):
+        ''' Get the Critial List data.
+        '''
         data = urllib2.urlopen(self.crits)
         regex = re.compile("^(.{21})\|(.{14})\|(.{10})\|(.{8})\|(.{8})\|(.{9})\|(.{9})\|(.{5})\|(.{10})\|(.{5})\|(.{5})")
         crits = []
@@ -59,7 +69,9 @@ class MPCweb(object):
             crits.append(crit)
         return crits
 
-    def genfindorb(self, neocplist):
+    def gen_findorb(self, neocplist):
+        ''' Generate the FindOrb format database.
+        '''
         findorbdb = ""
         for item in neocplist:
             url = "http://scully.cfa.harvard.edu/cgi-bin/showobsorbs.cgi?Obj="\
@@ -70,7 +82,7 @@ class MPCweb(object):
                     findorbdb = findorbdb + line
         return findorbdb
 
-    def unpackEpoch(self, packed):
+    def unpack_epoch(self, packed):
         ''' Unpack the MPC epoch format.
         '''
         ehash = {'1': '01',
@@ -114,7 +126,7 @@ class MPCweb(object):
         datestr = year + " " + month + " " + day + ".000"
         return datestr
 
-    def genSmallDB(self, neocplist):
+    def gen_smalldb(self, neocplist):
         ''' Download orbit data, store it in objects, and return a smalldb.
         '''
         smalldb = ""
@@ -130,33 +142,31 @@ class MPCweb(object):
                         if "NEOCPNomin" in line:
                             values = line.split()
                             item.addorbitdata(values[1], values[2],
-                                              self.unpackEpoch(values[3]),
+                                              self.unpack_epoch(values[3]),
                                               values[4], values[5], values[6],
                                               values[7], values[8], values[9],
                                               values[10])
                             dbline = "  %-19.19s|%-14.14s|%8.6f  |%8f|%8.4f|%8.4f |%8.4f| 2000|%9.4f  |%5.2f|%-5.2f|   0.00\n" % (
-                                      values[0], self.unpackEpoch(values[3]),
-                                      float(values[8]), float(values[10]),
-                                      float(values[7]), float(values[6]),
-                                      float(values[5]), float(values[4]),
-                                      float(values[1]), float(values[2]))
+                                values[0], self.unpack_epoch(values[3]),
+                                float(values[8]), float(values[10]),
+                                float(values[7]), float(values[6]),
+                                float(values[5]), float(values[4]),
+                                float(values[1]), float(values[2]))
                             logger.debug(dbline)
                             smalldb = smalldb + dbline
                             break
                 else:
                     # We already have it. Return the db ine
                     dbline = "  %-19.19s|%-14.14s|%8.6s  |%8s|%8.4s|%8.4s |%8.4s| 2000|%9.4s  |%5.2s|%-5.2s|   0.00\n" % (
-                                  item.tmpdesig, item.epoch, item.e, item.a,
-                                  item.incl, item.node, item.peri, item.m,
-                                  item.h, item.g)
+                        item.tmpdesig, item.epoch, item.e, item.a, item.incl,
+                        item.node, item.peri, item.m, item.h, item.g)
                     logger.debug(dbline)
                     smalldb = smalldb + dbline
             else:  # critlist
                 dbline = "  %-19.19s|%-14.14s|%8.6f  |%8f|%8.4f|%8.4f |%8.4f| 2000|%9.4f  |%5.2f|%-5.2f|   0.00\n" % (
-                                  item.tmpdesig, item.epoch, float(item.e),
-                                  float(item.a), float(item.incl),
-                                  float(item.node), float(item.peri),
-                                  float(item.m), float(item.h), float(item.g))
+                    item.tmpdesig, item.epoch, float(item.e), float(item.a),
+                    float(item.incl), float(item.node), float(item.peri),
+                    float(item.m), float(item.h), float(item.g))
                 logger.debug(item.peri)
                 logger.debug(type(item.peri))
                 logger.debug(dbline)
@@ -165,7 +175,7 @@ class MPCweb(object):
         return smalldb
 
 if __name__ == "__main__":
-    x = MPCweb()
-    neos = x.getneocp()
-    for neo in neos:
+    MPC = MPCweb()
+    NEOS = MPC.get_neocp()
+    for neo in NEOS:
         pprint.pprint(vars(neo))

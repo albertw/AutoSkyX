@@ -272,7 +272,7 @@ class imagescheduler(object):
                 # try TheSkyX
 
                 mpc = MPCweb.MPCweb()
-                mpc.genSmallDB(self.neoobj.neocplist)
+                mpc.gen_smalldb(self.neoobj.neocplist)
                 try:
                     # TODO: Call an update
                     mptarget = [l for l in self.neoobj.neocplist

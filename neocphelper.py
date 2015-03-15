@@ -118,7 +118,7 @@ class neocp(object):
         log.debug("Downloading NEO data.")
         try:
             mpc = MPCweb.MPCweb()
-            self.neocplist.extend(mpc.getneocp())
+            self.neocplist.extend(mpc.get_neocp())
             self.neocplist = remove_dups(self.neocplist)
             for item in self.neocptree.get_children():
                 self.neocptree.delete(item)
@@ -135,7 +135,7 @@ class neocp(object):
         '''
         try:
             mpc = MPCweb.MPCweb()
-            crits = mpc.getcrits()
+            crits = mpc.get_crits()
             for target in crits:
                 target.updateephem(self.timestring.get())
             self.neocplist.extend(crits)
@@ -188,7 +188,7 @@ class neocp(object):
         '''
         try:
             mpc = MPCweb.MPCweb()
-            self.smalldb = mpc.genSmallDB(self.neocplist)
+            self.smalldb = mpc.gen_smalldb(self.neocplist)
         except urllib2.URLError, errmsg:
             mesg = "Can't get orbit data:\n" + str(errmsg) +\
                    "\n Check you are online."
@@ -203,7 +203,7 @@ class neocp(object):
             if self.smalldb is None:
                 log.debug("creating smalldb")
                 mpc = MPCweb.MPCweb()
-                self.smalldb = mpc.genSmallDB(self.neocplist)
+                self.smalldb = mpc.gen_smalldb(self.neocplist)
             filename = asksaveasfilename()
             smdbf = open(filename, 'w')
             log.debug("writing to: " + str(filename))
@@ -221,7 +221,7 @@ class neocp(object):
         '''
         try:
             mpc = MPCweb.MPCweb()
-            fodb = mpc.genfindorb(self.neocplist)
+            fodb = mpc.gen_findorb(self.neocplist)
             filename = asksaveasfilename()
             fof = open(filename, 'w')
             fof.write(fodb)
@@ -244,7 +244,7 @@ class neocp(object):
             tkMessageBox.showerror(title="Date Error", message=mesg)
             return
         mpc = MPCweb.MPCweb()
-        self.smalldb = mpc.genSmallDB(self.neocplist)
+        self.smalldb = mpc.gen_smalldb(self.neocplist)
         for target in self.neocplist:
             # target.updateskyxinfo()
             # TODO we should only get the new data on a per object level
