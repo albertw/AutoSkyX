@@ -128,31 +128,6 @@ class Arduino(object):
         return output
 
 
-class TestArduinoSingleton(unittest.TestCase):
-    ''' Test class to just check that the singleton is working.
-    '''
-
-    def test_singleton1(self):
-        ''' Create two instances. Change self.com_port in one and verify the
-            com_port is the same in both.
-        '''
-        testa = Arduino()
-        testa.com_port = "COM1"
-        testb = Arduino()
-        testb.com_port = "COM2"
-        self.assertEqual(testa.com_port, testb.com_port)
-
-    def test_singleton2(self):
-        ''' Create two instances. Change self.com_port in one and verify that
-            it is changed when accessing the other.
-        '''
-        testa = Arduino()
-        testa.com_port = "COM1"
-        testb = Arduino()
-        testb.com_port = "COM2"
-        self.assertEqual(testa.com_port, "COM2")
-
-
 class TestArduino(unittest.TestCase):
     ''' Test class to check the arduino.
         Requires that Arduino be connected to the correct Serial/COM port!
