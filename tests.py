@@ -1,7 +1,9 @@
 import unittest
 import arduino
 import MPCweb
+import platform
 import os
+import sys
 import ephem
 
 
@@ -32,12 +34,17 @@ class TestArduinoSingleton(unittest.TestCase):
 class TestMPCWeb(unittest.TestCase):
     ''' Test the MPC web class
     '''
+    
     def setUp(self):
-
-        my_mpc = MPCweb.MPCweb(neocp="file://" + os.getcwd() +
-                               "/test_data/neocp.txt",
-                               crits="file://" + os.getcwd() +
-                               "/test_data/Soft06CritList.txt")
+        # TODO fix these paths
+        if os.name == 'nt':
+            ncp="file://" + "/Users\Albert\workspace\AutoSkyX" + "\\test_data\\neocp.txt"
+            cl="file://" + "/Users\Albert\workspace\AutoSkyX" + "\\test_data\\Soft06CritList.txt"
+        else:
+            ncp=os.getcwd() + "/neocp.txt"
+            cl=os.getcwd() + "/Soft06CritList.txt"
+        my_mpc = MPCweb.MPCweb(neocp=ncp,
+                               crits=cl)
         self.neos = my_mpc.get_neocp()
         self.crits = my_mpc.get_crits()
 
@@ -70,7 +77,7 @@ class TestMPCWeb(unittest.TestCase):
         self.assertEqual(self.target.h, "22.3")
 
     def test_crit_desig(self):
-        ''' test getting critical desig'''
+        ''' test getting critical h'''
         self.assertEqual(self.crit.h, "18.97")
 
     def test_crit_peri(self):
@@ -140,22 +147,22 @@ Date       UT   *  R.A. (J2000) Decl.  Elong.  V        Motion     Object     Su
                          str(self.targetj2000.dec))
 
     def test_target_ra_rate(self):
-        # TODO these don't match on MacOS and Win. Need to use approximate
-        # comparison
-        self.assertEqual(self.rarate, "-0.000109086432381",
-                         "RA rate is not expected value -0.000109086432381:" +
-                         self.rarate)
+        self.assertEqual(self.rarate[:14], "-0.00010908643",
+                         "RA rate is not expected value -0.00010908643:" +
+                         self.rarate[:14])
 
     def test_target_dec_rate(self):
-        # TODO these don't match on MacOS and Win. Need to use approximate
-        # comparison
-        self.assertEqual(self.decrate, "2.49415833039e-05",
-                         "RA rate is not expected value 2.49415833039e-05:" +
-                         self.decrate)
+        self.assertEqual(self.decrate[:9], "2.4941583",
+                         "RA rate is not expected value 2.4941583:" +
+                         self.decrate[:9])
 
     # TODO: Test to take an neocp target and gets its position,
     #        verify against skyx
     # TODO: Test to take an critlist target and gets its position,
     #        verify against skyx
 if __name__ == '__main__':
+    
+    if platform.architecture()[0] == '64bit':
+        print("We can't run on 64bit sorry")
+        sys.exit(1)
     unittest.main()

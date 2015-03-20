@@ -155,8 +155,7 @@ class minorplanet(object):
         target.compute(z72)
         self.v = target.mag
         self.alt = int(round(math.degrees(target.alt)))
-        # To match the MPC format
-        self.az = int(round(math.degrees(target.az))) + 180
+        self.az = int(round(math.degrees(target.az)))
         # self.v = target.mag
 
         # We need to do a little more work to get the J2000 RA & Dec.

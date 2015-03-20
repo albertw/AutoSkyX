@@ -6,14 +6,20 @@ import logging.config
 logging.config.fileConfig('config.ini')
 logger = logging.getLogger(__name__)
 
+import platform
 import ttk
+import sys
 
 from arduinogui import ArduinoGUI
 import arduinogui
 import cloudsensor
-import focuser
 import imagescheduler
+import focuser
 import neocphelper
+
+if platform.architecture()[0] == '64bit':
+    logger.warning("We can't run on 64bit sorry")
+    sys.exit(1)
 
 # Set up the root window
 root = Tk()
