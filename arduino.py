@@ -31,13 +31,21 @@ class Singleton(object):
     ''' Singleton class '''
     def __init__(self, klass):
         ''' Initiator '''
+        # When we load the module and decorated classes call this __init__()
+        # setting self.klass to the decorated class
         self.klass = klass
         self.instance = None
 
     def __call__(self, *args, **kwds):
         ''' When called as a function return our singleton instance. '''
+        # When a new object is created of the decorated class __call__()
+        # is called. We check if we already have an instance and if we do
+        # we return it.
         if self.instance is None:
             self.instance = self.klass(*args, **kwds)
+            # The above line is actually what calls Arduino.__init__
+            # So only gets called the first time we create and Arduino
+            # instance.
         return self.instance
 
 
