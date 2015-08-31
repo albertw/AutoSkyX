@@ -4,11 +4,12 @@ import math
 import tkFont
 import tkMessageBox
 import ttk
+import sys
 
 import ephem
 
 import MPCweb
-from SkyXConnection import SkyxObjectNotFoundError, SkyxConnectionError, SkyXConnection
+from skyx import SkyxObjectNotFoundError, SkyxConnectionError, SkyXConnection, sky6ObjectInformation
 
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,6 @@ class imagescheduler(object):
         self.namee = ttk.Entry()
 
         self.autoguide = Variable()
-        self.closedloop = Variable()
 
         self.inittableframe()
         self.initeditframe()
@@ -60,10 +60,11 @@ class imagescheduler(object):
         # data is fixed width so just do it for the headings that we've
         # already spaced out
         for col in self.tree_columns:
-            self.ttree.heading(col, text=col.title())
+            self.ttree.heading(col, text=col.title(),
+                                   command=lambda c=col: self.sortby(
+                                        self.ttree, c, 0))
             self.ttree.column(col,
                               width=tkFont.Font().measure(col.title()) + 5)
-
         delrows = ttk.Button(self.ttable, text="Delete rows",
                              command=self._deleteHandler)
         editrow = ttk.Button(self.ttable, text="Edit row",
@@ -126,23 +127,16 @@ class imagescheduler(object):
                                 command=self._addneoHandler)
         autoguide = ttk.Checkbutton(self.rbuttons, text="Use Autoguiding",
                                     variable=self.autoguide)
-        autoguide.state(['disabled'])
-        closedloop = ttk.Checkbutton(self.rbuttons,
-                                     text="Use Closed Loop Slew",
-                                     variable=self.closedloop)
-        closedloop.state(['disabled'])
-
-        helpertext1 = "SAll NEO's need to be in TheSkyX before running."
-        helptxt = ttk.Label(self.rbuttons, text=helpertext1, wraplength=170,
-                            anchor=W, justify=LEFT)
+        agcal = ttk.Button(self.rbuttons,
+                                text="Calibrate Autoguider",
+                                command=self._agcal)
 
         loadbut.grid(column=0, row=0, sticky=(N, S, E, W))
         savebut.grid(column=0, row=1, sticky=(N, S, E, W))
         updateskyxbut.grid(column=0, row=2, sticky=(N, S, E, W))
         loadNEObut.grid(column=0, row=3, sticky=(N, S, E, W))
         autoguide.grid(column=0, row=4, sticky=(N, S, E, W))
-        closedloop.grid(column=0, row=5, sticky=(N, S, E, W))
-        helptxt.grid(column=0, row=6, sticky=(N, S, E, W), ipady=20, padx=10)
+        agcal.grid(column=0, row=5, sticky=(N, S, E, W))
 
     def _savetargetHandler(self, *args):
         ''' need to validate the target name - off to skyx and be sure it
@@ -209,58 +203,87 @@ class imagescheduler(object):
 
     def _deleteHandler(self, *args):
         for item in self.ttree.selection():
+            tmpdesig = self.ttree.item(item)['values'][0]
+            self.neoobj.neocplist = ([x for x in self.neoobj.neocplist
+                               if x.tmpdesig != tmpdesig])
             self.ttree.delete(item)
+            
 
     def _runHandler(self):
+        altfails =  self._check()
+        if altfails:
+            tkMessageBox.showinfo(message="Targets are below horizon: " +
+                                  str([str(x) for x in altfails]))
+            return
+        skyx = SkyXConnection()
+        skyxobj = sky6ObjectInformation()
         for target in self.ttree.get_children():
             tname = self.ttree.item(target)['values'][0]
             texp = self.ttree.item(target)['values'][1]
             tnum = self.ttree.item(target)['values'][2]
             ra = self.ttree.item(target)['values'][3]
             dec = self.ttree.item(target)['values'][4]
-            skyx = SkyXConnection()
-            if skyx.closedloopslew(ra + "," + dec):
-                skyx.takeimages(texp, tnum)
-
+            try:
+                target_pos = skyxobj.currentTargetRaDec(j="now")
+                if skyx.closedloopslew(targer=ra + "," + dec):
+                    scope.sync(target_pos)
+                    skyx.takeimages(texp, tnum)
+            except SkyxConnectionError, e:
+                tkMessageBox.showinfo(message=e)
+                break
+            
     def _checkHandler(self):
         try:
-            (fails, altfails) = self._check()
-        except TypeError:
-            tkMessageBox.showinfo(message="Can't get target data.")
+            altfails = self._check()
+        except TypeError, e:
+            tkMessageBox.showinfo(message="Can't get target data. " + str(e))
             return (False)
-        if fails:
-            tkMessageBox.showinfo(message="Can't get data for: " + str(fails))
-            return(False)
-        elif altfails:
+        if altfails:
             tkMessageBox.showinfo(message="Targets are below horizon: " +
-                                  str(altfails))
+                                  str([str(x) for x in altfails]))
         else:
             tkMessageBox.showinfo(message="All targets OK")
             return (True)
 
+    def _agcal(self):
+        ''' Call TheSkyX autoguider calibration routine
+        '''
+        pass
+    
     def _check(self):
-        fails = []
+        ''' Simple check to see that the altitude of the targets is >10 deg
+        '''
+        self._updatepositions()
         altfails = []
         for target in self.ttree.get_children():
-            try:
-                tname = self.ttree.item(target)['values'][0]
-                [ra, dec, alt, az] = self._updateskyx(tname)
-            except SkyxObjectNotFoundError:
-                fails.append(self.ttree.item(target)['values'][0])
-            except SkyxConnectionError, e:
-                tkMessageBox.showinfo(message="Can't connect to SkyX. " +
-                                      str(e) + "\nis SkyX running?")
-                return(False)
+            tname = self.ttree.item(target)['values'][0]
+            alt = self.ttree.item(target)['values'][5]
             if float(alt) < 10:
                 altfails.append(self.ttree.item(target)['values'][0])
-        return(fails, altfails)
+        return(altfails)
 
     def _updatePositionHandler(self, *args):
         ''' Update the positions of our Minor Planets and if necessary from
             SkyX.'''
         # TODO a lot of this class assumes that the object is in SkyX. It wont
         # always be as we dont have an API to add objects so we'll just tell
-        # skyx the ra and dec
+        # skyx the ra and ded
+        self._updatepositions()
+
+    def _updatepositions(self):
+        
+        for target in self.neoobj.neocplist:
+            # target.updateskyxinfo()
+            # TODO we should only get the new data on a per object level
+            target.updateephem()
+        # Repopulate the tree
+        for item in self.ttree.get_children():
+            self.ttree.delete(item)
+        for item in self.neoobj.neocplist:
+            self.ttree.insert('', 'end', values=item.neolist())
+
+        return
+    
         fails = []
         for target in self.ttree.get_children():
 
@@ -290,6 +313,8 @@ class imagescheduler(object):
                                       str(e) + "\nis SkyX running?")
                 return()
             else:
+                print(self.ttree.item(target)['values'])
+                raise
                 for item in self.ttree.get_children():
                     if self.ttree.item(item)['values'][0] == tname:
                         index = self.ttree.index(item)
@@ -302,6 +327,23 @@ class imagescheduler(object):
         if fails:
             tkMessageBox.showinfo(message="Can't find targets: " + str(fails))
 
+    def sortby(self, tree, col, descending):
+        """Sort tree contents when a column is clicked on."""
+        # grab values to sort
+        data = [(tree.set(child, col), child)
+                for child in tree.get_children('')]
+
+        # reorder data
+        data.sort(reverse=descending)
+        for indx, item in enumerate(data):
+            tree.move(item[1], '', indx)
+
+        # switch the heading so that it will sort in the opposite direction
+        tree.heading(col,
+                     command=lambda col=col: self.sortby(tree,
+                                                         col,
+                                                         int(not descending)))
+        
     def _updateskyx(self, target):
         skyx = SkyXConnection()
         info = skyx.sky6ObjectInformation(target)

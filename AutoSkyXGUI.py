@@ -10,15 +10,16 @@ import platform
 import ttk
 import sys
 
-from arduinogui import ArduinoGUI
-import arduinogui
+from configgui import ConfigGUI
+import configgui
 import cloudsensor
 import imagescheduler
 import focuser
 import neocphelper
 
-if platform.architecture()[0] == '64bit':
-    logger.warning("We can't run on 64bit sorry")
+if (platform.architecture()[0] == '64bit' and 
+    "Windows" in platform.architecture()[1]):
+    logger.warning("We can't run on 64bit windows sorry")
     sys.exit(1)
 
 # Set up the root window
@@ -49,16 +50,16 @@ f5.grid(column=0, row=0, sticky=(N, S, E, W))
 f5.columnconfigure(0, weight=3)
 f5.rowconfigure(0, weight=3)
 n.add(f1, text="NEOCPHelper")
-n.add(f2, text="AutoSkyX")
+n.add(f2, text="Image Scheduler")
 n.add(f3, text="Focuser")
 n.add(f4, text="CloudSensor")
-n.add(f5, text="Arduino")
+n.add(f5, text="Config")
 
 neos = neocphelper.neocp(f1)
 isframe = imagescheduler.imagescheduler(f2, neos)
 focuserframe = focuser.Focuser(f3)
 cloudframe = cloudsensor.CloudSensor(f4)
-arduinoframe = arduinogui.ArduinoGUI(f5)
+configframe = configgui.ConfigGUI(f5)
 # Add menubar
 menubar = Menu(root)
 menubar.add_cascade(label="File")

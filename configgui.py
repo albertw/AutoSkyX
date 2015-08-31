@@ -7,8 +7,14 @@ import tkMessageBox
 
 import arduino
 
+# TODO: SkyX Host
+# TODO: Load/Save config
+# TODO: default min altitude
+# TODO: default exposure
+# TODO: default duration
+# TODO: debug toggle
 
-class ArduinoGUI(object):
+class ConfigGUI(object):
     ''' Class to handle the user interface for interfacing with the focuser
         via the arduino.
     '''
@@ -62,5 +68,5 @@ class ArduinoGUI(object):
 
 if __name__ == "__main__":
     ROOT = Tk()
-    ArduinoGUI(ROOT)
+    ConfigGUI(ROOT)
     ROOT.mainloop()
