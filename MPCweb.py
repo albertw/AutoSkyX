@@ -131,7 +131,7 @@ class MPCweb(object):
         '''
         smalldb = ""
         for item in neocplist:
-            if item.type == "neo":
+            if item.ttype == "neo":
                 # g should be populated if we got the orbit data before
                 if item.g == "":
                     url = "http://scully.cfa.harvard.edu/cgi-bin/showobsorbs.cgi?Obj=" \
@@ -162,7 +162,7 @@ class MPCweb(object):
                         item.node, item.peri, item.m, item.h, item.g)
                     logger.debug(dbline)
                     smalldb = smalldb + dbline
-            else:  # critlist
+            elif item.ttype == "mp":  # regular minor planet
                 dbline = "  %-19.19s|%-14.14s|%8.6f  |%8f|%8.4f|%8.4f |%8.4f| 2000|%9.4f  |%5.2f|%-5.2f|   0.00\n" % (
                     item.tmpdesig, item.epoch, float(item.e), float(item.a),
                     float(item.incl), float(item.node), float(item.peri),
@@ -171,6 +171,9 @@ class MPCweb(object):
                 logger.debug(type(item.peri))
                 logger.debug(dbline)
                 smalldb = smalldb + dbline
+            else:
+                # TODO possibly go to skyx if we can
+                pass
 
         return smalldb
 

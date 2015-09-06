@@ -21,15 +21,16 @@ class minorplanet(object):
     classdocs
     '''
 
-    def __init__(self, tmpdesig, mptype="npc"):
+    def __init__(self, tmpdesig, ttype=None, ra=None, dec=None, 
+                 nexposures=0, exposure=0):
         '''
         Constructor, Initialise everything to nothing
         '''
         self.tmpdesig = tmpdesig
         self.score = ""
         self.discovery = ""
-        self.ra = "0"
-        self.dec = "0"
+        self.ra = ra
+        self.dec = dec
         self.v = ""
         self.updated = ""
         self.note = ""
@@ -54,7 +55,9 @@ class minorplanet(object):
         self.a = ""
         self.rarate = ""
         self.decrate = ""
-        self.type = mptype
+        self.nexposures = nexposures
+        self.exposure = exposure
+        self.ttype = ttype
 
     def addneoprops(self, score, discovery, ra, dec, v, updated, note,
                     observations, arc, h):
@@ -70,7 +73,7 @@ class minorplanet(object):
         self.observations = observations
         self.arc = arc
         self.h = h
-        self.type = "neo"
+        self.ttype = "neo"
 
     def addcritprops(self, epoch, e, a, incl, node, peri, m, h, g):
         ''' Add the properties that we get from pulling the critical list
@@ -86,8 +89,19 @@ class minorplanet(object):
         self.m = m
         self.h = h
         self.g = g
-        self.type = "mp"
+        self.ttype = "mp"
 
+    def imglist(self):
+        ''' Return the target object as a list.
+        '''
+        return [self.tmpdesig,
+                self.exposure,
+                self.nexposures,
+                self.ra,
+                self.dec,
+                self.alt,
+                self.az]
+                
     def neolist(self):
         ''' Return the target object as a list.
         '''
@@ -128,6 +142,8 @@ class minorplanet(object):
                         round(time.time()))):
         ''' Update alt/az/ra/dec/rates/mag using pyephem
         '''
+        if self.ttype != "neo" and self.ttype != "mp":
+            return
         z72 = ephem.Observer()
         z72.lon = "-6.1136"
         z72.lat = "53.2744"

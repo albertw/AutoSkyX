@@ -1,4 +1,6 @@
 from Tkinter import N, S, E, W, LEFT, Variable
+from tkFileDialog import asksaveasfilename, askopenfile
+import json
 import logging
 import math
 import tkFont
@@ -7,12 +9,13 @@ import ttk
 import sys
 
 import ephem
+import minorplanet
 
 import MPCweb
 from skyx import SkyxObjectNotFoundError, SkyxConnectionError, SkyXConnection, sky6ObjectInformation
 
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class imagescheduler(object):
@@ -115,10 +118,12 @@ class imagescheduler(object):
         self.rbuttons = ttk.Frame(self.frame)
         self.rbuttons.grid(column=2, row=0, sticky=(N, S, E, W))
 
-        loadbut = ttk.Button(self.rbuttons, text="Load Schedule")
-        loadbut.state(['disabled'])
-        savebut = ttk.Button(self.rbuttons, text="Save Schedule")
-        savebut.state(['disabled'])
+        loadbut = ttk.Button(self.rbuttons, text="Load Schedule",
+                             command=self._loadsched)
+        #loadbut.state(['disabled'])
+        savebut = ttk.Button(self.rbuttons, text="Save Schedule",
+                             command=self._savesched)
+        #savebut.state(['disabled'])
         updateskyxbut = ttk.Button(self.rbuttons, text="Update positions",
                                    command=self._updatePositionHandler)
         # updateskyxbut.state(['disabled'])
@@ -138,22 +143,26 @@ class imagescheduler(object):
         autoguide.grid(column=0, row=4, sticky=(N, S, E, W))
         agcal.grid(column=0, row=5, sticky=(N, S, E, W))
 
+    def _savesched(self, *args):
+        ''' save the schedule'''
+        filename = asksaveasfilename()
+        fof = open(filename, 'w')
+        for target in self.neoobj.neocplist:
+            fof.write(json.dumps(target.__dict__) + "\n")
+        fof.close()
+            
+    def _loadsched(self, *args):
+        ''' load a saved schedule '''
+        fn = askopenfile()
+        self.neoobj.neocplist = []
+        for line in fn:
+            # BUG: needs to be a target not just a dict. need to fix minorplanet constructor
+            self.neoobj.neocplist.append(json.loads(line))
+                                         
     def _savetargetHandler(self, *args):
         ''' need to validate the target name - off to skyx and be sure it
         exists, check the values are sane in the other fields then add to
         the list.
-        '''
-        '''
-        try:
-            self._updateskyx(self.tname.get())
-        except SkyxObjectNotFoundError:
-            tkMessageBox.showinfo(message="Can't find target: " +
-                                  self.tname.get() +
-                                  "\nAdd it in SkyX to continue.")
-            return()
-        except SkyxConnectionError:
-            # We'll validate the target later before running
-            pass
         '''
         if self.tname.get() and self.texposure.get() and self.tnumexp.get():
             # If it already exists delete it
@@ -164,16 +173,26 @@ class imagescheduler(object):
                 if self.ttree.item(item)['values'][0] == self.tname.get():
                     index = self.ttree.index(item)
                     self.ttree.delete(item)
-            self.ttree.insert('', index, values=[self.tname.get(),
-                                                 self.texposure.get(),
-                                                 self.tnumexp.get()])
+            try:
+                t = [x for x in self.neoobj.neocplist if x.tmpdesig == self.tname.get()][0]
+                t.exposure = self.texposure.get()
+                t.nexposures = self.tnumexp.get()
+                self.ttree.insert('', index, values=t.imglist())
+            except IndexError:
+                # It wasn't on the list
+                mp = minorplanet.minorplanet(self.tname.get(), nexposures=self.tnumexp.get(), exposure=self.texposure.get())
+                self.neoobj.neocplist.append(mp)
+                self.ttree.insert('', index, values=mp.imglist())
+                
         else:
             tkMessageBox.showinfo(message="Invalid Data Supplied")
         self._clear()
 
     def _addneoHandler(self, *args):
         for neo in self.neoobj.neocplist:
-            self.ttree.insert('', 'end', values=[neo.tmpdesig, "30", "10",
+            neo.exposure = 30
+            neo.nexposures = 10
+            self.ttree.insert('', 'end', values=[neo.tmpdesig, neo.exposure, neo.nexposures,
                                                  neo.ra, neo.dec,
                                                  neo.alt, neo.az])
 
@@ -256,6 +275,7 @@ class imagescheduler(object):
         self._updatepositions()
         altfails = []
         for target in self.ttree.get_children():
+            log.debug(self.ttree.item(target)['values'])
             tname = self.ttree.item(target)['values'][0]
             alt = self.ttree.item(target)['values'][5]
             if float(alt) < 10:
@@ -280,53 +300,10 @@ class imagescheduler(object):
         for item in self.ttree.get_children():
             self.ttree.delete(item)
         for item in self.neoobj.neocplist:
-            self.ttree.insert('', 'end', values=item.neolist())
+            self.ttree.insert('', 'end', values=item.imglist())
 
         return
     
-        fails = []
-        for target in self.ttree.get_children():
-
-            try:
-                tname = self.ttree.item(target)['values'][0]
-                texp = self.ttree.item(target)['values'][1]
-                tnum = self.ttree.item(target)['values'][2]
-                # Try to get data from out minor planet list. If it's not there
-                # try TheSkyX
-
-                mpc = MPCweb.MPCweb()
-                mpc.gen_smalldb(self.neoobj.neocplist)
-                try:
-                    # TODO: Call an update
-                    mptarget = [l for l in self.neoobj.neocplist
-                                if tname == l.tmpdesig][0]
-                    mptarget.updateephem()
-                    [ra, dec, alt, az] = [math.degrees(mptarget.ra)/15,
-                                          math.degrees(mptarget.dec),
-                                          mptarget.alt, mptarget.az]
-                except IndexError:
-                    [ra, dec, alt, az] = self._updateskyx(tname)
-            except SkyxObjectNotFoundError:
-                fails.append(self.ttree.item(target)['values'][0])
-            except SkyxConnectionError, e:
-                tkMessageBox.showinfo(message="Can't connect to SkyX. " +
-                                      str(e) + "\nis SkyX running?")
-                return()
-            else:
-                print(self.ttree.item(target)['values'])
-                raise
-                for item in self.ttree.get_children():
-                    if self.ttree.item(item)['values'][0] == tname:
-                        index = self.ttree.index(item)
-                        self.ttree.delete(item)
-                self.ttree.insert('', index, values=[tname, texp, tnum,
-                                                     round(float(ra), 3),
-                                                     round(float(dec), 3),
-                                                     round(float(alt), 2),
-                                                     round(float(az), 2)])
-        if fails:
-            tkMessageBox.showinfo(message="Can't find targets: " + str(fails))
-
     def sortby(self, tree, col, descending):
         """Sort tree contents when a column is clicked on."""
         # grab values to sort
