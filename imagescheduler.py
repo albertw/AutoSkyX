@@ -10,6 +10,7 @@ import sys
 
 import ephem
 import minorplanet
+import skyx
 
 import MPCweb
 from skyx import SkyxObjectNotFoundError, SkyxConnectionError, SkyXConnection, sky6ObjectInformation
@@ -156,9 +157,15 @@ class imagescheduler(object):
         fn = askopenfile()
         self.neoobj.neocplist = []
         for line in fn:
-            # BUG: needs to be a target not just a dict. need to fix minorplanet constructor
-            self.neoobj.neocplist.append(json.loads(line))
-                                         
+            # TODO Handle more than fixed objects
+            targetj = json.loads(line)
+            if targetj['ttype'] != "neo" and targetj['ttype'] != "mp":
+                target=minorplanet.minorplanet(targetj['tmpdesig'], ra=targetj['ra'], dec=targetj['dec'])
+                self.neoobj.neocplist.append(target) 
+            else:
+                log.debug("Discarding " + targetj['tmpdesig'])
+        self._updatepositions()
+        
     def _savetargetHandler(self, *args):
         ''' need to validate the target name - off to skyx and be sure it
         exists, check the values are sane in the other fields then add to
@@ -229,10 +236,10 @@ class imagescheduler(object):
             
 
     def _runHandler(self):
-        altfails =  self._check()
-        if altfails:
-            tkMessageBox.showinfo(message="Targets are below horizon: " +
-                                  str([str(x) for x in altfails]))
+        fails =  self._check()
+        if fails:
+            log.debug(fails)
+            tkMessageBox.showinfo(message=fails)
             return
         skyx = SkyXConnection()
         skyxobj = sky6ObjectInformation()
@@ -242,24 +249,31 @@ class imagescheduler(object):
             tnum = self.ttree.item(target)['values'][2]
             ra = self.ttree.item(target)['values'][3]
             dec = self.ttree.item(target)['values'][4]
+            log.info("Starting Imagining run for " + tname)
             try:
+                # TODO fix this
+                skyxobj.find(ra + "," + dec)
                 target_pos = skyxobj.currentTargetRaDec(j="now")
-                if skyx.closedloopslew(targer=ra + "," + dec):
-                    scope.sync(target_pos)
-                    skyx.takeimages(texp, tnum)
+                log.info("coordinates acquired. Starting Closed Loop Slew")
+                skyx.closedloopslew(target=ra + "," + dec)
+                log.info("slew complete. Syncing scope position to target")
+                scope.sync(target_pos)
+                log.info("Synced. Starting Imagining")
+                skyx.takeimages(texp, tnum)
+                log.info("All images completed.")
             except SkyxConnectionError, e:
                 tkMessageBox.showinfo(message=e)
                 break
             
     def _checkHandler(self):
         try:
-            altfails = self._check()
+            fails = self._check()
         except TypeError, e:
             tkMessageBox.showinfo(message="Can't get target data. " + str(e))
             return (False)
-        if altfails:
-            tkMessageBox.showinfo(message="Targets are below horizon: " +
-                                  str([str(x) for x in altfails]))
+        if fails:
+            log.debug(fails)
+            tkMessageBox.showinfo(message=fails)
         else:
             tkMessageBox.showinfo(message="All targets OK")
             return (True)
@@ -273,14 +287,18 @@ class imagescheduler(object):
         ''' Simple check to see that the altitude of the targets is >10 deg
         '''
         self._updatepositions()
-        altfails = []
+        msg = ""
         for target in self.ttree.get_children():
             log.debug(self.ttree.item(target)['values'])
             tname = self.ttree.item(target)['values'][0]
             alt = self.ttree.item(target)['values'][5]
+            ra = self.ttree.item(target)['values'][3]
             if float(alt) < 10:
-                altfails.append(self.ttree.item(target)['values'][0])
-        return(altfails)
+                msg = msg + self.ttree.item(target)['values'][0] + "- below horizon\n"           
+            elif ra == None:
+                msg = msg + self.ttree.item(target)['values'][0] + "- no RA\n"           
+        return(msg)
+        
 
     def _updatePositionHandler(self, *args):
         ''' Update the positions of our Minor Planets and if necessary from
@@ -295,7 +313,24 @@ class imagescheduler(object):
         for target in self.neoobj.neocplist:
             # target.updateskyxinfo()
             # TODO we should only get the new data on a per object level
-            target.updateephem()
+            # TODO call to SkyX to get coords of fixed objects if ttype and ra/dec == None
+            if target.ttype != None:
+                target.updateephem()
+            else:
+                if target.ra == None:
+                    try:
+                        conn = skyx.SkyXConnection()
+                        obj = skyx.sky6ObjectInformation()
+                        
+                        try:
+                            conn.find(target.tmpdesig)
+                            pos = obj.currentTargetRaDec(j="2000")
+                            target.ra = pos[0]
+                            target.dec = pos[1]
+                        except SkyxObjectNotFoundError as e:
+                            log.error(e)
+                    except SkyxConnectionError as e:
+                        log.error(e)
         # Repopulate the tree
         for item in self.ttree.get_children():
             self.ttree.delete(item)
