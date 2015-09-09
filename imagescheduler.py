@@ -11,7 +11,7 @@ import time
 import sys
 
 import ephem
-import minorplanet
+import target
 import skyx
 
 import MPCweb
@@ -189,7 +189,7 @@ class imagescheduler(object):
                 self.ttree.insert('', index, values=t.imglist())
             except IndexError:
                 # It wasn't on the list
-                mp = minorplanet.minorplanet(self.tname.get(), nexposures=self.tnumexp.get(), exposure=self.texposure.get())
+                mp = target.target(self.tname.get(), ttype="fixed", nexposures=self.tnumexp.get(), exposure=self.texposure.get())
                 self.neoobj.neocplist.append(mp)
                 self.ttree.insert('', index, values=mp.imglist())
                 
@@ -316,6 +316,12 @@ class imagescheduler(object):
             # target.updateskyxinfo()
             # TODO we should only get the new data on a per object level
             # TODO call to SkyX to get coords of fixed objects if ttype and ra/dec == None
+            try:
+                target.updateephem()
+            except Exception as e:
+                tkMessageBox.showinfo("Skyx Error", e)
+
+            '''
             if target.ttype != None:
                 target.updateephem()
             else:
@@ -348,6 +354,7 @@ class imagescheduler(object):
                             log.error(e)
                     except SkyxConnectionError as e:
                         log.error(e)
+        '''
         # Repopulate the tree
         for item in self.ttree.get_children():
             self.ttree.delete(item)

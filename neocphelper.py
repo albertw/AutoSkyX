@@ -248,7 +248,11 @@ class neocp(object):
         for target in self.neocplist:
             # target.updateskyxinfo()
             # TODO we should only get the new data on a per object level
-            target.updateephem(self.timestring.get())
+            try:
+                target.updateephem(self.timestring.get())
+            except Exception as e:
+                tkMessageBox.showinfo("Skyx Error", e)
+
         # Repopulate the tree
         for item in self.neocptree.get_children():
             self.neocptree.delete(item)

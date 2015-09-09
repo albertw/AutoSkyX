@@ -6,7 +6,7 @@ import pprint
 import re
 import urllib2
 
-import minorplanet
+import target
 
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ class MPCweb(object):
         my_neos = []
         for line in data:
             res = regex.match(line)
-            my_neo = minorplanet.minorplanet(res.group(1).strip())
+            my_neo = target.target(res.group(1).strip())
             my_neo.addneoprops(res.group(2), res.group(3),
                                res.group(4), res.group(5), res.group(6),
                                res.group(7), res.group(8), res.group(9),
@@ -57,7 +57,7 @@ class MPCweb(object):
             res = regex.match(line)
             logger.debug(line)
             logger.debug(res.group(2))
-            crit = minorplanet.minorplanet(res.group(1).strip(), mptype="mp")
+            crit = target.target(res.group(1).strip(), ttype="mp")
             logger.debug(res.group(2) + " " + res.group(3) + " " +
                          res.group(4) + " " + res.group(5) + " " +
                          res.group(6) + " " + res.group(7) + " " +

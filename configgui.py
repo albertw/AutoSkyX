@@ -6,7 +6,7 @@ import ttk
 import tkMessageBox
 
 import arduino
-
+import skyx
 # TODO: SkyX Host
 # TODO: Load/Save config
 # TODO: default min altitude
@@ -26,6 +26,8 @@ class ConfigGUI(object):
 
         self.frame = frame
         self.comport = StringVar()
+        self.skyxhost = StringVar()
+        self.skyxhost.set("192.168.192.44")
 
         rframe = ttk.Frame(self.frame)
         rframe.grid(sticky=(N, S, E, W))
@@ -36,6 +38,16 @@ class ConfigGUI(object):
 
         self.__comport(comframe)
 
+        skxlabel = ttk.Label(comframe, text='SkyX Host:')
+        skxlabel.grid(column=0, row=1, sticky=(W))
+        skxentry = ttk.Entry(comframe, textvariable=self.skyxhost)
+        skxentry.grid(column=1, row=1, sticky=(W))
+        setskyxbut = ttk.Button(comframe,
+                                text="Update SkyX hostname",
+                                command=self._updateskyxhost)
+        setskyxbut.grid(column=2, row=1, sticky=(W))
+
+        
     def __comport(self, comframe):
         ''' Private function to handle the COM port selector.
         '''
@@ -49,6 +61,12 @@ class ConfigGUI(object):
                                   command=self.__connect)
         self.connect.grid(column=2, row=0)
 
+    def _updateskyxhost(self):
+        ''' Update the host in the SkyX singleton
+        '''
+        sx = skyx.SkyXConnection()
+        sx.reconfigure(host=self.skyxhost.get())
+        
     def __connect(self):
         ''' Get the com port and call connect or disconnect if we are already
             connected
