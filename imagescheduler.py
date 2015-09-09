@@ -6,6 +6,8 @@ import math
 import tkFont
 import tkMessageBox
 import ttk
+import datetime
+import time
 import sys
 
 import ephem
@@ -319,14 +321,29 @@ class imagescheduler(object):
             else:
                 if target.ra == None:
                     try:
-                        conn = skyx.SkyXConnection()
+                        conn = skyx.SkyXConnection('192.168.192.44')
                         obj = skyx.sky6ObjectInformation()
                         
                         try:
+                            # TODO this should be in minorplanet
+                            # TODO minorplanet should be renamed to target
                             conn.find(target.tmpdesig)
                             pos = obj.currentTargetRaDec(j="2000")
-                            target.ra = pos[0]
-                            target.dec = pos[1]
+                            t = ephem.FixedBody()
+                            t._ra = rafloat2rahours(float(pos[0]))
+                            t._dec = math.radians(float(pos[1]))
+                            target.ra = t._ra
+                            target.dec = t._dec
+                            z72 = ephem.Observer()
+                            z72.lon = "-6.1136"
+                            z72.lat = "53.2744"
+                            z72.elevation = 100
+                            z72.date = ephem.Date(datetime.datetime.fromtimestamp(round(time.time())))
+                            z72.epoch = "2000"
+                            t.compute(z72)
+                            # Bug these are wrong
+                            target.alt = t.alt
+                            target.az = t.az
                         except SkyxObjectNotFoundError as e:
                             log.error(e)
                     except SkyxConnectionError as e:
@@ -361,3 +378,9 @@ class imagescheduler(object):
         info = skyx.sky6ObjectInformation(target)
         return(info['sk6ObjInfoProp_RA_2000'], info['sk6ObjInfoProp_DEC_2000'],
                info['sk6ObjInfoProp_ALT'], info['sk6ObjInfoProp_AZM'])
+
+def rafloat2rahours(f):
+    m,h =  math.modf(f)
+    s,m = math.modf(m*60)
+    s = math.modf(s*60)[1]
+    return (str(int(h)) + ":" + str(int(m)) + ":" + str((s)))
