@@ -2,9 +2,9 @@
 '''
 
 import logging
-from Tkinter import N, S, E, W, HORIZONTAL, StringVar, Tk
-import ttk
-import tkMessageBox
+from tkinter import N, S, E, W, HORIZONTAL, StringVar, Tk
+import tkinter.ttk
+import tkinter.messagebox
 
 import arduino
 
@@ -24,16 +24,16 @@ class Focuser(object):
         self.frame = frame
         self.comport = StringVar()
 
-        rframe = ttk.Frame(self.frame)
+        rframe = tkinter.ttk.Frame(self.frame)
         rframe.grid(sticky=(N, S, E, W))
 
-        sliders = ttk.Frame(rframe)
+        sliders = tkinter.ttk.Frame(rframe)
         sliders.grid(column=0, row=0, sticky=(N, E, W))
         sliders.columnconfigure(1, weight=3)
 
         self.__sliders(sliders)
 
-        buttons = ttk.Frame(rframe)
+        buttons = tkinter.ttk.Frame(rframe)
         buttons.grid(column=0, row=1, sticky=(N, E, W))
         buttons.rowconfigure(0, weight=3)
 
@@ -42,15 +42,15 @@ class Focuser(object):
     def __sliders(self, sliders):
         ''' Private function to handle the sliders.
         '''
-        speed_text = ttk.Label(sliders, text="Motor Speed  ")
+        speed_text = tkinter.ttk.Label(sliders, text="Motor Speed  ")
         speed_text.grid(column=0, row=0)
-        self.speed_slider = ttk.Scale(sliders, orient=HORIZONTAL,
+        self.speed_slider = tkinter.ttk.Scale(sliders, orient=HORIZONTAL,
                                       length=500, from_=1.0, to=255.0)
         self.speed_slider.grid(column=1, row=0)
         self.speed_slider.set(255)
-        pulse_text = ttk.Label(sliders, text="Pulse Time(ms)  ")
+        pulse_text = tkinter.ttk.Label(sliders, text="Pulse Time(ms)  ")
         pulse_text.grid(column=0, row=1)
-        self.pulse_slider = ttk.Scale(sliders, orient=HORIZONTAL,
+        self.pulse_slider = tkinter.ttk.Scale(sliders, orient=HORIZONTAL,
                                       length=500, from_=1.0, to=1000.0)
         self.pulse_slider.grid(column=1, row=1)
         self.pulse_slider.set(30)
@@ -58,32 +58,32 @@ class Focuser(object):
     def __buttons(self, buttons):
         ''' Private function to handle the buttons.
         '''
-        full_reverse = ttk.Button(buttons, text="Motor\nReverse\nFull",
+        full_reverse = tkinter.ttk.Button(buttons, text="Motor\nReverse\nFull",
                                   command=self.__full_reverse)
         full_reverse.grid(column=0, row=0, padx=5, sticky=(N, S, E, W))
         # TODO These may not need to be self.
-        self.click_hold_reverse = ttk.Button(buttons,
+        self.click_hold_reverse = tkinter.ttk.Button(buttons,
                                              text="Motor\nReverse\nClick/Hold",
                                              command=self.__click_reverse)
         self.click_hold_reverse.bind("<Button-1>", self.__click_reverse)
         self.click_hold_reverse.bind("<ButtonRelease-1>", self.__motor_off)
         self.click_hold_reverse.grid(column=1, row=0, padx=5,
                                      sticky=(N, S, E, W))
-        pulse_reverse = ttk.Button(buttons, text="Motor\nReverse\nPulse",
+        pulse_reverse = tkinter.ttk.Button(buttons, text="Motor\nReverse\nPulse",
                                    command=self.__pulse_reverse)
         pulse_reverse.grid(column=2, row=0, padx=5, sticky=(N, S, E, W))
-        motor_off = ttk.Button(buttons, text="Motor Off",
+        motor_off = tkinter.ttk.Button(buttons, text="Motor Off",
                                command=self.__motor_off)
         motor_off.grid(column=3, row=0, padx=5, sticky=(N, S, E, W))
-        pulse = ttk.Button(buttons, text="Motor\nForward\nPulse",
+        pulse = tkinter.ttk.Button(buttons, text="Motor\nForward\nPulse",
                            command=self.__pulse_forward)
         pulse.grid(column=4, row=0, padx=5, sticky=(N, S, E, W))
-        self.click_hold = ttk.Button(buttons, text="Motor\nForward\nClick/Hold",
+        self.click_hold = tkinter.ttk.Button(buttons, text="Motor\nForward\nClick/Hold",
                                      command=self.__click_forward)
         self.click_hold.grid(column=5, row=0, padx=5, sticky=(N, S, E, W))
         self.click_hold_reverse.bind("<Button-1>", self.__click_forward)
         self.click_hold_reverse.bind("<ButtonRelease-1>", self.__motor_off)
-        full = ttk.Button(buttons, text="Motor\nForward\nFull",
+        full = tkinter.ttk.Button(buttons, text="Motor\nForward\nFull",
                           command=self.__full_forward)
         full.grid(column=6, row=0, padx=5, sticky=(N, S, E, W))
 

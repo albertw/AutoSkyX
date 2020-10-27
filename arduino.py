@@ -101,7 +101,7 @@ class Arduino(object):
         output = self.__get_serial_line().split(":")
         try:
             return(output[2], output[4])
-        except IndexError, msg:
+        except IndexError as msg:
             raise IndexError(str(msg) + str(output))
 
     def set_speed(self, speed):
@@ -158,9 +158,9 @@ class TestArduino(unittest.TestCase):
         '''
         try:
             self.testa.get_temperatures()
-        except ArduinoUnparseableOutput, msg:
+        except ArduinoUnparseableOutput as msg:
             self.assertEqual(True, False, "Unparseable Output " + str(msg))
-        except IndexError, msg:
+        except IndexError as msg:
             self.assertEqual(True, False, "Output not as expected:" + str(msg))
 
     def test_set_speed(self):
@@ -169,9 +169,9 @@ class TestArduino(unittest.TestCase):
         try:
             ret = self.testa.set_speed(100)
             self.assertEqual(ret, "98", "Set speed does not match.")
-        except ArduinoUnparseableOutput, msg:
+        except ArduinoUnparseableOutput as msg:
             self.assertEqual(True, False, "Unparseable Output " + str(msg))
-        except IndexError, msg:
+        except IndexError as msg:
             self.assertEqual(True, False, "Output not as expected:" + str(msg))
 
     def test_set_speed2(self):
@@ -179,7 +179,7 @@ class TestArduino(unittest.TestCase):
         '''
         try:
             self.testa.set_speed(500)
-        except RuntimeError, msg:
+        except RuntimeError as msg:
             self.assertEqual("Invalid speed given.", str(msg), str(msg))
         else:
             self.assertEqual(True, False, "Output not as expected:" + str(msg))
@@ -192,7 +192,7 @@ class TestArduino(unittest.TestCase):
             self.assertEqual(ret, "100", "Set duration does not match.")
         except ArduinoUnparseableOutput:
             self.assertEqual(True, False, "ArduinoUnparseableOutput caught.")
-        except IndexError, msg:
+        except IndexError as msg:
             self.assertEqual(True, False, "Output not as expected:" + str(msg))
 
     def test_set_pulse_duration2(self):
@@ -200,7 +200,7 @@ class TestArduino(unittest.TestCase):
         '''
         try:
             self.testa.set_pulse_duration(60000)
-        except RuntimeError, msg:
+        except RuntimeError as msg:
             self.assertTrue(str(msg).startswith("Too long a pulse"), str(msg))
         else:
             self.assertEqual(True, False, "Output not as expected:" + str(msg))
@@ -217,7 +217,7 @@ class TestArduino(unittest.TestCase):
                             "Moved Motor message not received.")
         except ArduinoUnparseableOutput:
             self.assertEqual(True, False, "ArduinoUnparseableOutput caught.")
-        except IndexError, msg:
+        except IndexError as msg:
             self.assertEqual(True, False, "Output not as expected:" + str(msg))
 
     def test_motor_commands2(self):
@@ -232,7 +232,7 @@ class TestArduino(unittest.TestCase):
                             "Moved Motor message not received.")
         except ArduinoUnparseableOutput:
             self.assertEqual(True, False, "ArduinoUnparseableOutput caught.")
-        except IndexError, msg:
+        except IndexError as msg:
             self.assertEqual(True, False, "Output not as expected:" + str(msg))
 
     def test_motor_commands3(self):
@@ -245,7 +245,7 @@ class TestArduino(unittest.TestCase):
                             "Stopped Motor message not received.")
         except ArduinoUnparseableOutput:
             self.assertEqual(True, False, "ArduinoUnparseableOutput caught.")
-        except IndexError, msg:
+        except IndexError as msg:
             self.assertEqual(True, False, "Output not as expected:" + str(msg))
 
     def test_sendchar(self):
@@ -253,7 +253,7 @@ class TestArduino(unittest.TestCase):
         '''
         try:
             self.testa.send_char('b')
-        except RuntimeError, msg:
+        except RuntimeError as msg:
             self.assertTrue(str(msg).startswith("Invalid character"), str(msg))
         else:
             self.assertEqual(True, False, "Output not as expected:")

@@ -1,11 +1,11 @@
-from Tkinter import N, S, E, W, LEFT, Variable
-from tkFileDialog import asksaveasfilename, askopenfile
+from tkinter import N, S, E, W, LEFT, Variable
+from tkinter.filedialog import asksaveasfilename, askopenfile
 import json
 import logging
 import math
-import tkFont
-import tkMessageBox
-import ttk
+import tkinter.font
+import tkinter.messagebox
+import tkinter.ttk
 import datetime
 import time
 import sys
@@ -32,9 +32,9 @@ class imagescheduler(object):
         self.tname = Variable()
         self.texposure = Variable()
         self.tnumexp = Variable()
-        self.exposuree = ttk.Entry()
-        self.nexposuree = ttk.Entry()
-        self.namee = ttk.Entry()
+        self.exposuree = tkinter.ttk.Entry()
+        self.nexposuree = tkinter.ttk.Entry()
+        self.namee = tkinter.ttk.Entry()
 
         self.autoguide = Variable()
 
@@ -48,7 +48,7 @@ class imagescheduler(object):
                              "     Az     ")
 
         self.tlist = []
-        self.ttable = ttk.Frame(self.frame)
+        self.ttable = tkinter.ttk.Frame(self.frame)
 
         self.ttable.grid(column=0, row=0, sticky=(N, S, E, W))
         self.ttable.grid_columnconfigure(0, weight=1)
@@ -56,9 +56,9 @@ class imagescheduler(object):
         self.ttable.rowconfigure(0, weight=3)
 
         # List
-        self.ttree = ttk.Treeview(self.ttable, columns=self.tree_columns,
+        self.ttree = tkinter.ttk.Treeview(self.ttable, columns=self.tree_columns,
                                   show="headings")
-        vsb = ttk.Scrollbar(orient="vertical")
+        vsb = tkinter.ttk.Scrollbar(orient="vertical")
         self.ttree.configure(yscrollcommand=vsb.set)
         self.ttree.grid(column=0, row=0, columnspan=7, sticky='nsew',
                         in_=self.ttable)
@@ -70,17 +70,17 @@ class imagescheduler(object):
                                    command=lambda c=col: self.sortby(
                                         self.ttree, c, 0))
             self.ttree.column(col,
-                              width=tkFont.Font().measure(col.title()) + 5)
-        delrows = ttk.Button(self.ttable, text="Delete rows",
+                              width=tkinter.font.Font().measure(col.title()) + 5)
+        delrows = tkinter.ttk.Button(self.ttable, text="Delete rows",
                              command=self._deleteHandler)
-        editrow = ttk.Button(self.ttable, text="Edit row",
+        editrow = tkinter.ttk.Button(self.ttable, text="Edit row",
                              command=self._editrowHandler)
-        run = ttk.Button(self.ttable, text="Run Schedule",
+        run = tkinter.ttk.Button(self.ttable, text="Run Schedule",
                          command=self._runHandler)
-        check = ttk.Button(self.ttable, text="Check Schedule",
+        check = tkinter.ttk.Button(self.ttable, text="Check Schedule",
                            command=self._checkHandler)
-        up = ttk.Button(self.ttable, text="Up", command=self._up)
-        down = ttk.Button(self.ttable, text="Down", command=self._down)
+        up = tkinter.ttk.Button(self.ttable, text="Up", command=self._up)
+        down = tkinter.ttk.Button(self.ttable, text="Down", command=self._down)
 
         delrows.grid(column=6, row=1, sticky=(E))
         editrow.grid(column=4, row=1, sticky=(E))
@@ -92,50 +92,50 @@ class imagescheduler(object):
         self.ttable.grid(column=0, row=0, sticky=(N, W, E, S))
 
     def initeditframe(self):
-        self.tedit = ttk.Frame(self.frame)
+        self.tedit = tkinter.ttk.Frame(self.frame)
         self.tedit.grid(column=1, row=0, sticky=(S, N))
 
-        nl = ttk.Label(self.tedit, text="Target:")
+        nl = tkinter.ttk.Label(self.tedit, text="Target:")
         nl.grid(column=0, row=0, sticky=(N, S, E, W))
-        self.namee = ttk.Entry(self.tedit, textvariable=self.tname)
+        self.namee = tkinter.ttk.Entry(self.tedit, textvariable=self.tname)
         self.namee.grid(column=1, row=0, sticky=(N, S, E, W))
 
-        el = ttk.Label(self.tedit, text="Exposure Length:")
+        el = tkinter.ttk.Label(self.tedit, text="Exposure Length:")
         el.grid(column=0, row=1, sticky=(N, S, E, W))
-        self.exposuree = ttk.Entry(self.tedit, textvariable=self.texposure)
+        self.exposuree = tkinter.ttk.Entry(self.tedit, textvariable=self.texposure)
         self.exposuree.grid(column=1, row=1, sticky=(N, S, E, W))
 
-        nel = ttk.Label(self.tedit, text="Number of Exposures:")
+        nel = tkinter.ttk.Label(self.tedit, text="Number of Exposures:")
         nel.grid(column=0, row=2, sticky=(N, S, E, W))
-        self.nexposuree = ttk.Entry(self.tedit, textvariable=self.tnumexp)
+        self.nexposuree = tkinter.ttk.Entry(self.tedit, textvariable=self.tnumexp)
         self.nexposuree.grid(column=1, row=2, sticky=(N, S, E, W))
 
-        c = ttk.Button(self.tedit, text="Clear", command=self._clear)
-        l = ttk.Button(self.tedit, text="Save/Add Target",
+        c = tkinter.ttk.Button(self.tedit, text="Clear", command=self._clear)
+        l = tkinter.ttk.Button(self.tedit, text="Save/Add Target",
                        command=self._savetargetHandler)
         c.grid(column=0, row=5, sticky=(S))
         l.grid(column=1, row=5, sticky=(S))
 
     def initrightframe(self):
 
-        self.rbuttons = ttk.Frame(self.frame)
+        self.rbuttons = tkinter.ttk.Frame(self.frame)
         self.rbuttons.grid(column=2, row=0, sticky=(N, S, E, W))
 
-        loadbut = ttk.Button(self.rbuttons, text="Load Schedule",
+        loadbut = tkinter.ttk.Button(self.rbuttons, text="Load Schedule",
                              command=self._loadsched)
         #loadbut.state(['disabled'])
-        savebut = ttk.Button(self.rbuttons, text="Save Schedule",
+        savebut = tkinter.ttk.Button(self.rbuttons, text="Save Schedule",
                              command=self._savesched)
         #savebut.state(['disabled'])
-        updateskyxbut = ttk.Button(self.rbuttons, text="Update positions",
+        updateskyxbut = tkinter.ttk.Button(self.rbuttons, text="Update positions",
                                    command=self._updatePositionHandler)
         # updateskyxbut.state(['disabled'])
-        loadNEObut = ttk.Button(self.rbuttons,
+        loadNEObut = tkinter.ttk.Button(self.rbuttons,
                                 text="Add selected Minor Planets",
                                 command=self._addneoHandler)
-        autoguide = ttk.Checkbutton(self.rbuttons, text="Use Autoguiding",
+        autoguide = tkinter.ttk.Checkbutton(self.rbuttons, text="Use Autoguiding",
                                     variable=self.autoguide)
-        agcal = ttk.Button(self.rbuttons,
+        agcal = tkinter.ttk.Button(self.rbuttons,
                                 text="Calibrate Autoguider",
                                 command=self._agcal)
 
@@ -194,7 +194,7 @@ class imagescheduler(object):
                 self.ttree.insert('', index, values=mp.imglist())
                 
         else:
-            tkMessageBox.showinfo(message="Invalid Data Supplied")
+            tkinter.messagebox.showinfo(message="Invalid Data Supplied")
         self._clear()
 
     def _addneoHandler(self, *args):
@@ -241,7 +241,7 @@ class imagescheduler(object):
         fails =  self._check()
         if fails:
             log.debug(fails)
-            tkMessageBox.showinfo(message=fails)
+            tkinter.messagebox.showinfo(message=fails)
             return
         skyx = SkyXConnection()
         skyxobj = sky6ObjectInformation()
@@ -263,21 +263,21 @@ class imagescheduler(object):
                 log.info("Synced. Starting Imagining")
                 skyx.takeimages(texp, tnum)
                 log.info("All images completed.")
-            except SkyxConnectionError, e:
-                tkMessageBox.showinfo(message=e)
+            except SkyxConnectionError as e:
+                tkinter.messagebox.showinfo(message=e)
                 break
             
     def _checkHandler(self):
         try:
             fails = self._check()
-        except TypeError, e:
-            tkMessageBox.showinfo(message="Can't get target data. " + str(e))
+        except TypeError as e:
+            tkinter.messagebox.showinfo(message="Can't get target data. " + str(e))
             return (False)
         if fails:
             log.debug(fails)
-            tkMessageBox.showinfo(message=fails)
+            tkinter.messagebox.showinfo(message=fails)
         else:
-            tkMessageBox.showinfo(message="All targets OK")
+            tkinter.messagebox.showinfo(message="All targets OK")
             return (True)
 
     def _agcal(self):
@@ -319,7 +319,7 @@ class imagescheduler(object):
             try:
                 target.updateephem()
             except Exception as e:
-                tkMessageBox.showinfo("Skyx Error", e)
+                tkinter.messagebox.showinfo("Skyx Error", e)
 
             '''
             if target.ttype != None:

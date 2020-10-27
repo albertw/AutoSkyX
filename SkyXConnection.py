@@ -1,6 +1,6 @@
 ''' Method to handle connections to TheSkyX
 '''
-from __future__ import print_function
+
 
 import logging
 from socket import socket, AF_INET, SOCK_STREAM, SHUT_RDWR, error

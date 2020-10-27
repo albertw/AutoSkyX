@@ -1,9 +1,9 @@
 ''' Module to handle the motorised focuser via an Arduino
 '''
 
-from Tkinter import N, S, E, W, HORIZONTAL, StringVar, Tk
-import ttk
-import tkMessageBox
+from tkinter import N, S, E, W, HORIZONTAL, StringVar, Tk
+import tkinter.ttk
+import tkinter.messagebox
 
 import arduino
 import skyx
@@ -29,20 +29,20 @@ class ConfigGUI(object):
         self.skyxhost = StringVar()
         self.skyxhost.set("192.168.192.44")
 
-        rframe = ttk.Frame(self.frame)
+        rframe = tkinter.ttk.Frame(self.frame)
         rframe.grid(sticky=(N, S, E, W))
 
-        comframe = ttk.Frame(rframe)
+        comframe = tkinter.ttk.Frame(rframe)
         comframe.grid(column=0, row=2, sticky=(N, E, W))
         comframe.rowconfigure(0, weight=3)
 
         self.__comport(comframe)
 
-        skxlabel = ttk.Label(comframe, text='SkyX Host:')
+        skxlabel = tkinter.ttk.Label(comframe, text='SkyX Host:')
         skxlabel.grid(column=0, row=1, sticky=(W))
-        skxentry = ttk.Entry(comframe, textvariable=self.skyxhost)
+        skxentry = tkinter.ttk.Entry(comframe, textvariable=self.skyxhost)
         skxentry.grid(column=1, row=1, sticky=(W))
-        setskyxbut = ttk.Button(comframe,
+        setskyxbut = tkinter.ttk.Button(comframe,
                                 text="Update SkyX hostname",
                                 command=self._updateskyxhost)
         setskyxbut.grid(column=2, row=1, sticky=(W))
@@ -51,13 +51,13 @@ class ConfigGUI(object):
     def __comport(self, comframe):
         ''' Private function to handle the COM port selector.
         '''
-        self.comlabel = ttk.Label(comframe, text="Select COM port: ")
+        self.comlabel = tkinter.ttk.Label(comframe, text="Select COM port: ")
         self.comlabel.grid(column=0, row=0)
-        self.com = ttk.Combobox(comframe, textvariable=self.comport)
+        self.com = tkinter.ttk.Combobox(comframe, textvariable=self.comport)
         self.com['values'] = ('COM3', 'COM6', 'COM7', 'COM8', 'COM9')
         self.com.current(2)
         self.com.grid(column=1, row=0)
-        self.connect = ttk.Button(comframe, text="Connect",
+        self.connect = tkinter.ttk.Button(comframe, text="Connect",
                                   command=self.__connect)
         self.connect.grid(column=2, row=0)
 
@@ -78,8 +78,8 @@ class ConfigGUI(object):
             try:
                 self.uno.connect(self.comport.get())
                 self.connect.config(text="Disconnect")
-            except OSError, errmsg:
-                tkMessageBox.showinfo("Arduino Error", str(errmsg) +
+            except OSError as errmsg:
+                tkinter.messagebox.showinfo("Arduino Error", str(errmsg) +
                                       "\nHint: Check the com port your " +
                                       "arduino is attached to.")
 

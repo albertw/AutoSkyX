@@ -1,9 +1,9 @@
-''' Module to implement the Arduino based cloud sensor
+""" Module to implement the Arduino based cloud sensor
 
     Siren wav from http://soundbible.com/1577-Siren-Noise.html
-'''
+"""
 
-from Tkinter import N, S, E, W, StringVar, Tk
+from tkinter import N, S, E, W, StringVar, Tk
 import datetime
 import logging
 import math
@@ -12,7 +12,7 @@ import subprocess
 import sys
 import socket
 import select
-import ttk
+import tkinter.ttk
 
 log = logging.getLogger(__name__)
 templog = logging.getLogger('CloudData')
@@ -36,9 +36,10 @@ serverdelay = 100
 
 
 class CloudSensor(object):
-    ''' Cloud sensor notebook object'''
+    """ Cloud sensor notebook object"""
+
     def __init__(self, frame):
-        ''' initiate the window'''
+        """ initiate the window"""
         self.uno = Arduino()
 
         self.threshold = StringVar()
@@ -61,16 +62,16 @@ class CloudSensor(object):
         self.stopbutton = None
         self.stop = True
 
-        rframe = ttk.Frame(self.frame)
+        rframe = tkinter.ttk.Frame(self.frame)
         rframe.grid(sticky=(N, S, E, W))
 
-        plot = ttk.Frame(rframe)
+        plot = tkinter.ttk.Frame(rframe)
         plot.grid(column=0, row=0, sticky=(N, E, W))
         plot.columnconfigure(1, weight=3)
 
         self.__plot(plot)
 
-        info = ttk.Frame(rframe)
+        info = tkinter.ttk.Frame(rframe)
         info.grid(column=1, row=0, sticky=(N, E, W))
         info.rowconfigure(0, weight=3)
 
@@ -80,9 +81,9 @@ class CloudSensor(object):
         self.network()
 
     def __plot(self, frame):
-        ''' Draw the plot of temperatures.
-        '''
-        sframe = ttk.Frame(frame)
+        """ Draw the plot of temperatures.
+        """
+        sframe = tkinter.ttk.Frame(frame)
         sframe.grid()
         self.fig = Figure(figsize=(12, 6), dpi=50)
         self.fig.autofmt_xdate()
@@ -93,13 +94,13 @@ class CloudSensor(object):
         self.ax1.plot(self.timearray, self.ambtmphist)
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=sframe)
-        self.canvas.show()
+        self.canvas.draw()
         c = self.canvas.get_tk_widget()
         c.grid(row=0, column=0)
 
     def __updateplot(self):
-        ''' Update the plot with the latest values
-        '''
+        """ Update the plot with the latest values
+        """
 
         self.ax1.clear()
         self.ax1.plot(self.timearray, self.skytmphist)
@@ -115,49 +116,49 @@ class CloudSensor(object):
         c.grid(row=0, column=0)
 
     def __info(self, frame):
-        ''' Show the info panel.
-        '''
-        skytemplabel = ttk.Label(frame, text="Sky Temperature (C)")
+        """ Show the info panel.
+        """
+        skytemplabel = tkinter.ttk.Label(frame, text="Sky Temperature (C)")
         skytemplabel.grid(column=0, row=0, padx=5, sticky=(N, S, E, W))
-        self.skytemp = ttk.Label(frame, text="-10")
+        self.skytemp = tkinter.ttk.Label(frame, text="-10")
         self.skytemp.grid(column=1, row=0, padx=5, sticky=(N, S, E, W))
 
-        ambtemplabel = ttk.Label(frame, text="Ambient Temperature (C)")
+        ambtemplabel = tkinter.ttk.Label(frame, text="Ambient Temperature (C)")
         ambtemplabel.grid(column=0, row=1, padx=5, sticky=(N, S, E, W))
-        self.ambtemp = ttk.Label(frame, text="0")
+        self.ambtemp = tkinter.ttk.Label(frame, text="0")
         self.ambtemp.grid(column=1, row=1, padx=5, sticky=(N, S, E, W))
 
-        thresholdlabel = ttk.Label(frame, text="Threshold Temperature")
+        thresholdlabel = tkinter.ttk.Label(frame, text="Threshold Temperature")
         thresholdlabel.grid(column=0, row=2, padx=5, sticky=(N, S, E, W))
-        threshold = ttk.Entry(frame, textvariable=self.threshold)
+        threshold = tkinter.ttk.Entry(frame, textvariable=self.threshold)
         threshold.grid(column=1, row=2, padx=5, sticky=(N, S, E, W))
 
-        comlabel = ttk.Label(frame, text="Select Client/Server Mode: ")
+        comlabel = tkinter.ttk.Label(frame, text="Select Client/Server Mode: ")
         comlabel.grid(column=0, row=3, padx=5, sticky=(N, S, E, W))
-        self.com = ttk.Combobox(frame, textvariable=self.csmode)
+        self.com = tkinter.ttk.Combobox(frame, textvariable=self.csmode)
         self.com['values'] = ('Off', 'Client', 'Server')
         self.com.current(0)
         self.com.grid(column=1, row=3, padx=5, sticky=(N, S, E, W))
 
-        self.mutebutton = ttk.Button(frame, text="Mute",
-                                     command=self.__mutebutton)
+        self.mutebutton = tkinter.ttk.Button(frame, text="Mute",
+                                             command=self.__mutebutton)
         self.mutebutton.grid(column=0, row=4, padx=5, sticky=(N, S, E, W))
-        self.stopbutton = ttk.Button(frame, text="Start",
-                                     command=self.__stopbutton)
+        self.stopbutton = tkinter.ttk.Button(frame, text="Start",
+                                             command=self.__stopbutton)
         self.stopbutton.grid(column=1, row=4, padx=5, sticky=(N, S, E, W))
-        resetbutton = ttk.Button(frame, text="Reset", command=self.__reset)
+        resetbutton = tkinter.ttk.Button(frame, text="Reset", command=self.__reset)
         resetbutton.grid(column=0, row=5, padx=5, sticky=(N, S, E, W))
 
     def __reset(self):
-        ''' Purge the existing cloud data.
-        '''
+        """ Purge the existing cloud data.
+        """
         self.skytmphist = []
         self.ambtmphist = []
         self.timearray = []
 
     def __stopbutton(self):
-        ''' Private function to toggle stop and start and change button text.
-        '''
+        """ Private function to toggle stop and start and change button text.
+        """
         if self.stop is False:
             self.stop = True
             self.stopbutton.config(text='Start')
@@ -166,8 +167,8 @@ class CloudSensor(object):
             self.stopbutton.config(text='Stop')
 
     def __mutebutton(self):
-        ''' Private function to toggle mute and change button text
-        '''
+        """ Private function to toggle mute and change button text
+        """
         if self.mute is False:
             self.mute = True
             self.mutebutton.config(text='Unmute')
@@ -176,9 +177,9 @@ class CloudSensor(object):
             self.mutebutton.config(text='Mute')
 
     def updatetmp(self):
-        ''' Update the temperatures and gui.
+        """ Update the temperatures and gui.
             Also check if we need to raise alarm.
-        '''
+        """
         if self.stop:
             self.frame.after(polldelay, self.updatetmp)
             return
@@ -244,10 +245,10 @@ class CloudSensor(object):
         self.frame.after(polldelay, self.updatetmp)
 
     def network(self):
-        ''' Either Run a tcp server that a client can connect to
+        """ Either Run a tcp server that a client can connect to
             or run a client to connect to a server
             or do nothing.
-        '''
+        """
         mode = self.csmode.get()
         # print mode
         if 'Off' in mode:
@@ -256,7 +257,7 @@ class CloudSensor(object):
         elif 'Server' in mode:
             if self.socket is None:
                 self.socket = socket.socket(
-                            socket.AF_INET, socket.SOCK_STREAM)
+                    socket.AF_INET, socket.SOCK_STREAM)
                 self.socket.bind((socket.gethostname(), 8001))
                 self.socket.setblocking(0)
                 self.socket.listen(5)
@@ -271,6 +272,7 @@ class CloudSensor(object):
             except Exception as msg:
                 log.error("exception1: " + str(msg))
             self.frame.after(serverdelay, self.network)
+
 
 if __name__ == "__main__":
     ROOT = Tk()
