@@ -37,6 +37,8 @@ class imagescheduler(object):
         self.namee = tkinter.ttk.Entry()
 
         self.autoguide = Variable()
+        self.clslew = Variable()
+        self.clslew.set(1)
 
         self.inittableframe()
         self.initeditframe()
@@ -58,7 +60,7 @@ class imagescheduler(object):
         # List
         self.ttree = tkinter.ttk.Treeview(self.ttable, columns=self.tree_columns,
                                   show="headings")
-        vsb = tkinter.ttk.Scrollbar(orient="vertical")
+        vsb = tkinter.ttk.Scrollbar(orient="vertical", command=self.ttree.yview)
         self.ttree.configure(yscrollcommand=vsb.set)
         self.ttree.grid(column=0, row=0, columnspan=7, sticky='nsew',
                         in_=self.ttable)
@@ -79,9 +81,10 @@ class imagescheduler(object):
                          command=self._runHandler)
         check = tkinter.ttk.Button(self.ttable, text="Check Schedule",
                            command=self._checkHandler)
+        self.ttree.bind("<BackSpace>", self._deleteHandler)
+        self.ttree.bind("<Delete>", self._deleteHandler)
         up = tkinter.ttk.Button(self.ttable, text="Up", command=self._up)
         down = tkinter.ttk.Button(self.ttable, text="Down", command=self._down)
-
         delrows.grid(column=6, row=1, sticky=(E))
         editrow.grid(column=4, row=1, sticky=(E))
         up.grid(column=3, row=1, sticky=(E))
@@ -130,21 +133,20 @@ class imagescheduler(object):
         updateskyxbut = tkinter.ttk.Button(self.rbuttons, text="Update positions",
                                    command=self._updatePositionHandler)
         # updateskyxbut.state(['disabled'])
-        loadNEObut = tkinter.ttk.Button(self.rbuttons,
-                                text="Add selected Minor Planets",
-                                command=self._addneoHandler)
+
         autoguide = tkinter.ttk.Checkbutton(self.rbuttons, text="Use Autoguiding",
                                     variable=self.autoguide)
+        clslew = tkinter.ttk.Checkbutton(self.rbuttons, text="Use Closed Loop Slew",
+                                            variable=self.clslew)
         agcal = tkinter.ttk.Button(self.rbuttons,
                                 text="Calibrate Autoguider",
                                 command=self._agcal)
-
         loadbut.grid(column=0, row=0, sticky=(N, S, E, W))
         savebut.grid(column=0, row=1, sticky=(N, S, E, W))
         updateskyxbut.grid(column=0, row=2, sticky=(N, S, E, W))
-        loadNEObut.grid(column=0, row=3, sticky=(N, S, E, W))
         autoguide.grid(column=0, row=4, sticky=(N, S, E, W))
-        agcal.grid(column=0, row=5, sticky=(N, S, E, W))
+        clslew.grid(column=0, row=5, sticky=(N, S, E, W))
+        agcal.grid(column=0, row=6, sticky=(N, S, E, W))
 
     def _savesched(self, *args):
         ''' save the schedule'''
@@ -198,6 +200,7 @@ class imagescheduler(object):
         self._clear()
 
     def _addneoHandler(self, *args):
+        log.debug(self.neoobj.neocplist)
         for neo in self.neoobj.neocplist:
             neo.exposure = 30
             neo.nexposures = 10
@@ -230,6 +233,7 @@ class imagescheduler(object):
             self.ttree.move(item, '', index + 1)
 
     def _deleteHandler(self, *args):
+        log.info("in deletehandler")
         for item in self.ttree.selection():
             tmpdesig = self.ttree.item(item)['values'][0]
             self.neoobj.neocplist = ([x for x in self.neoobj.neocplist
@@ -238,7 +242,7 @@ class imagescheduler(object):
             
 
     def _runHandler(self):
-        fails =  self._check()
+        fails = self._check()
         if fails:
             log.debug(fails)
             tkinter.messagebox.showinfo(message=fails)
@@ -256,11 +260,17 @@ class imagescheduler(object):
                 # TODO fix this
                 skyxobj.find(ra + "," + dec)
                 target_pos = skyxobj.currentTargetRaDec(j="now")
-                log.info("coordinates acquired. Starting Closed Loop Slew")
-                skyx.closedloopslew(target=ra + "," + dec)
-                log.info("slew complete. Syncing scope position to target")
-                scope.sync(target_pos)
-                log.info("Synced. Starting Imagining")
+                log.info("coordinates acquired.")
+                if self.clslew.get() == 1:
+                    log.info("Starting Closed Loop Slew")
+                    skyx.closedloopslew(target=ra + "," + dec)
+                    log.info("slew complete. Syncing scope position to target")
+                    scope.sync(target_pos)
+                    log.info("Synced.")
+                else:
+                    log.info("Starting Basic Slew")
+                    log.info("slew complete.")
+                log.info("Starting Imagining")
                 skyx.takeimages(texp, tnum)
                 log.info("All images completed.")
             except SkyxConnectionError as e:
@@ -362,7 +372,14 @@ class imagescheduler(object):
             self.ttree.insert('', 'end', values=item.imglist())
 
         return
-    
+
+    def refresh(self, event):
+        # Repopulate the tree
+        for item in self.ttree.get_children():
+            self.ttree.delete(item)
+        for item in self.neoobj.neocplist:
+            self.ttree.insert('', 'end', values=item.imglist())
+
     def sortby(self, tree, col, descending):
         """Sort tree contents when a column is clicked on."""
         # grab values to sort

@@ -75,4 +75,16 @@ root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
 root.config(menu=menubar)
 logger.debug("Starting.")
+
+def refresh(event):
+    """ Refresh the data in the tabs.
+    """
+    tab = event.widget.tab('current')['text']
+    if tab == "NEOCPHelper":
+        neos.refresh(event)
+    elif tab == "Image Scheduler":
+        isframe.refresh(event)
+
+root.bind("<<NotebookTabChanged>>", refresh)
+
 root.mainloop()

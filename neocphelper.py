@@ -232,6 +232,14 @@ class neocp(object):
             log.error(mesg)
             tkinter.messagebox.showerror("MPC Error", mesg)
 
+    def refresh(self, event):
+        # Repopulate the tree
+        for item in self.neocptree.get_children():
+            self.neocptree.delete(item)
+        for item in self.neocplist:
+            self.neocptree.insert('', 'end', values=item.neolist())
+
+
     def updatepositionsHandler(self):
         """ Handler to update the positions of the targets for the selected
             time. Downloading orbit data if necessary.

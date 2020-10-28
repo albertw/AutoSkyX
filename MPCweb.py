@@ -51,12 +51,12 @@ class MPCweb(object):
     def get_crits(self):
         """ Get the Critical List data.
         """
-        data = urllib.request.urlopen(self.crits)
+        data = urllib.request.urlopen(self.crits).readlines()
         regex = re.compile(
             "^(.{21})\|(.{14})\|(.{10})\|(.{8})\|(.{8})\|(.{9})\|(.{9})\|(.{5})\|(.{10})\|(.{5})\|(.{5})")
         crits = []
         for line in data:
-            res = regex.match(line)
+            res = regex.match(line.decode('UTF-8'))
             logger.debug(line)
             logger.debug(res.group(2))
             crit = target.target(res.group(1).strip(), ttype="mp")
