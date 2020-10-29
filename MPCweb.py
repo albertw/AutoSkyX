@@ -1,17 +1,22 @@
 """ Mpdule to interface with the MPC website
 """
-
+import json
 import logging
 import pprint
 import re
 import urllib.error
 import urllib.parse
 import urllib.request
+from os import path, makedirs
 
 import target
 
 logger = logging.getLogger(__name__)
 
+appdatadir = path.expandvars(r'%LOCALAPPDATA%\AutoSkyX')
+
+if not path.exists(appdatadir):
+    makedirs(appdatadir)
 
 class MPCweb(object):
     """ Class to interface with the MPC website
@@ -128,14 +133,14 @@ class MPCweb(object):
         datestr = year + " " + month + " " + day + ".000"
         return datestr
 
-    def gen_smalldb(self, neocplist):
+    def gen_smalldb(self, neocplist, download=False):
         """ Download orbit data, store it in objects, and return a smalldb.
         """
         smalldb = ""
         for item in neocplist:
             if item.ttype == "neo":
                 # g should be populated if we got the orbit data before
-                if item.g == "":
+                if download == True:
                     url = "https://cgi.minorplanetcenter.net/cgi-bin/showobsorbs.cgi?Obj=" \
                           + item.tmpdesig + "&orb=y"
                     logger.debug(url)
@@ -178,8 +183,40 @@ class MPCweb(object):
                 # TODO possibly go to skyx if we can
                 pass
 
+        # Write everything we know to the neocplist file
+        with open(path.join(appdatadir, "neocplist")) as json_file:
+            cache = json.load(json_file)
+
+        outlist = []
+
+        for item in neocplist:
+            outlist.append(item.__dict__)
+
+        for item in cache:
+            f = filter(lambda desig: desig['tmpdesig'] == item.tmpdesig, outlist)
+            if not f:
+                outlist.append(item)
+
+        with open(path.join(appdatadir, "neocplist"), 'w') as outfile:
+            json.dump(outlist, outfile)
+
         return smalldb
 
+    def updatefromcache(self, neocplist):
+
+        with open(path.join(appdatadir, "neocplist")) as json_file:
+            cache = json.load(json_file)
+
+        for item in neocplist:
+            print(item)
+            print(item.tmpdesig)
+            for c in cache:
+                print(c)
+
+                if item.tmpdesig == c['tmpdesig']:
+                    item.addorbitdata(c['h'], c['g'], c['epoch'], c['m'],
+                                      c['peri'], c['node'], c['incl'],
+                                      c['e'], c['n'], c['a'])
 
 if __name__ == "__main__":
     MPC = MPCweb()

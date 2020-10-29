@@ -27,7 +27,7 @@ class ConfigGUI(object):
         self.frame = frame
         self.comport = StringVar()
         self.skyxhost = StringVar()
-        self.skyxhost.set("192.168.192.44")
+        self.skyxhost.set("192.168.0.66")
 
         rframe = tkinter.ttk.Frame(self.frame)
         rframe.grid(sticky=(N, S, E, W))

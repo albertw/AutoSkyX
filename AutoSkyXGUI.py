@@ -1,21 +1,16 @@
 """ AutoSkyXGUI root window module
 """
-from tkinter import N, S, E, W, Tk, FALSE, Menu
-import logging
 import logging.config
+import tkinter.ttk
+from tkinter import N, S, E, W, Tk, FALSE, Menu
 
 logging.config.fileConfig('config.ini')
 logger = logging.getLogger(__name__)
 
-import platform
-import tkinter.ttk
-import sys
-
-from configgui import ConfigGUI
-import configgui
 import cloudsensor
-import imagescheduler
+import configgui
 import focuser
+import imagescheduler
 import neocphelper
 
 """
@@ -76,6 +71,7 @@ root.rowconfigure(0, weight=1)
 root.config(menu=menubar)
 logger.debug("Starting.")
 
+
 def refresh(event):
     """ Refresh the data in the tabs.
     """
@@ -84,6 +80,7 @@ def refresh(event):
         neos.refresh(event)
     elif tab == "Image Scheduler":
         isframe.refresh(event)
+
 
 root.bind("<<NotebookTabChanged>>", refresh)
 

@@ -1,22 +1,14 @@
-from tkinter import N, S, E, W, LEFT, Variable
-from tkinter.filedialog import asksaveasfilename, askopenfile
 import json
 import logging
 import math
 import tkinter.font
 import tkinter.messagebox
 import tkinter.ttk
-import datetime
-import time
-import sys
+from tkinter import N, S, E, W, Variable
+from tkinter.filedialog import asksaveasfilename, askopenfile
 
-import ephem
 import target
-import skyx
-
-import MPCweb
-from skyx import SkyxObjectNotFoundError, SkyxConnectionError, SkyXConnection, sky6ObjectInformation
-
+from skyx import SkyxConnectionError, SkyXConnection, sky6ObjectInformation
 
 log = logging.getLogger(__name__)
 
@@ -59,7 +51,7 @@ class imagescheduler(object):
 
         # List
         self.ttree = tkinter.ttk.Treeview(self.ttable, columns=self.tree_columns,
-                                  show="headings")
+                                          show="headings")
         vsb = tkinter.ttk.Scrollbar(orient="vertical", command=self.ttree.yview)
         self.ttree.configure(yscrollcommand=vsb.set)
         self.ttree.grid(column=0, row=0, columnspan=7, sticky='nsew',
@@ -69,18 +61,18 @@ class imagescheduler(object):
         # already spaced out
         for col in self.tree_columns:
             self.ttree.heading(col, text=col.title(),
-                                   command=lambda c=col: self.sortby(
-                                        self.ttree, c, 0))
+                               command=lambda c=col: self.sortby(
+                                   self.ttree, c, 0))
             self.ttree.column(col,
                               width=tkinter.font.Font().measure(col.title()) + 5)
         delrows = tkinter.ttk.Button(self.ttable, text="Delete rows",
-                             command=self._deleteHandler)
+                                     command=self._deleteHandler)
         editrow = tkinter.ttk.Button(self.ttable, text="Edit row",
-                             command=self._editrowHandler)
+                                     command=self._editrowHandler)
         run = tkinter.ttk.Button(self.ttable, text="Run Schedule",
-                         command=self._runHandler)
+                                 command=self._runHandler)
         check = tkinter.ttk.Button(self.ttable, text="Check Schedule",
-                           command=self._checkHandler)
+                                   command=self._checkHandler)
         self.ttree.bind("<BackSpace>", self._deleteHandler)
         self.ttree.bind("<Delete>", self._deleteHandler)
         up = tkinter.ttk.Button(self.ttable, text="Up", command=self._up)
@@ -115,7 +107,7 @@ class imagescheduler(object):
 
         c = tkinter.ttk.Button(self.tedit, text="Clear", command=self._clear)
         l = tkinter.ttk.Button(self.tedit, text="Save/Add Target",
-                       command=self._savetargetHandler)
+                               command=self._savetargetHandler)
         c.grid(column=0, row=5, sticky=(S))
         l.grid(column=1, row=5, sticky=(S))
 
@@ -125,22 +117,22 @@ class imagescheduler(object):
         self.rbuttons.grid(column=2, row=0, sticky=(N, S, E, W))
 
         loadbut = tkinter.ttk.Button(self.rbuttons, text="Load Schedule",
-                             command=self._loadsched)
-        #loadbut.state(['disabled'])
+                                     command=self._loadsched)
+        # loadbut.state(['disabled'])
         savebut = tkinter.ttk.Button(self.rbuttons, text="Save Schedule",
-                             command=self._savesched)
-        #savebut.state(['disabled'])
+                                     command=self._savesched)
+        # savebut.state(['disabled'])
         updateskyxbut = tkinter.ttk.Button(self.rbuttons, text="Update positions",
-                                   command=self._updatePositionHandler)
+                                           command=self._updatePositionHandler)
         # updateskyxbut.state(['disabled'])
 
         autoguide = tkinter.ttk.Checkbutton(self.rbuttons, text="Use Autoguiding",
-                                    variable=self.autoguide)
+                                            variable=self.autoguide)
         clslew = tkinter.ttk.Checkbutton(self.rbuttons, text="Use Closed Loop Slew",
-                                            variable=self.clslew)
+                                         variable=self.clslew)
         agcal = tkinter.ttk.Button(self.rbuttons,
-                                text="Calibrate Autoguider",
-                                command=self._agcal)
+                                   text="Calibrate Autoguider",
+                                   command=self._agcal)
         loadbut.grid(column=0, row=0, sticky=(N, S, E, W))
         savebut.grid(column=0, row=1, sticky=(N, S, E, W))
         updateskyxbut.grid(column=0, row=2, sticky=(N, S, E, W))
@@ -155,7 +147,7 @@ class imagescheduler(object):
         for target in self.neoobj.neocplist:
             fof.write(json.dumps(target.__dict__) + "\n")
         fof.close()
-            
+
     def _loadsched(self, *args):
         ''' load a saved schedule '''
         fn = askopenfile()
@@ -164,12 +156,12 @@ class imagescheduler(object):
             # TODO Handle more than fixed objects
             targetj = json.loads(line)
             if targetj['ttype'] != "neo" and targetj['ttype'] != "mp":
-                target=minorplanet.minorplanet(targetj['tmpdesig'], ra=targetj['ra'], dec=targetj['dec'])
-                self.neoobj.neocplist.append(target) 
+                target = minorplanet.minorplanet(targetj['tmpdesig'], ra=targetj['ra'], dec=targetj['dec'])
+                self.neoobj.neocplist.append(target)
             else:
                 log.debug("Discarding " + targetj['tmpdesig'])
         self._updatepositions()
-        
+
     def _savetargetHandler(self, *args):
         ''' need to validate the target name - off to skyx and be sure it
         exists, check the values are sane in the other fields then add to
@@ -191,10 +183,11 @@ class imagescheduler(object):
                 self.ttree.insert('', index, values=t.imglist())
             except IndexError:
                 # It wasn't on the list
-                mp = target.target(self.tname.get(), ttype="fixed", nexposures=self.tnumexp.get(), exposure=self.texposure.get())
+                mp = target.target(self.tname.get(), ttype="fixed", nexposures=self.tnumexp.get(),
+                                   exposure=self.texposure.get())
                 self.neoobj.neocplist.append(mp)
                 self.ttree.insert('', index, values=mp.imglist())
-                
+
         else:
             tkinter.messagebox.showinfo(message="Invalid Data Supplied")
         self._clear()
@@ -237,9 +230,8 @@ class imagescheduler(object):
         for item in self.ttree.selection():
             tmpdesig = self.ttree.item(item)['values'][0]
             self.neoobj.neocplist = ([x for x in self.neoobj.neocplist
-                               if x.tmpdesig != tmpdesig])
+                                      if x.tmpdesig != tmpdesig])
             self.ttree.delete(item)
-            
 
     def _runHandler(self):
         fails = self._check()
@@ -258,7 +250,7 @@ class imagescheduler(object):
             log.info("Starting Imagining run for " + tname)
             try:
                 # TODO fix this
-                skyxobj.find(ra + "," + dec)
+                skyxobj.sky6ObjectInformation(ra + "," + dec)
                 target_pos = skyxobj.currentTargetRaDec(j="now")
                 log.info("coordinates acquired.")
                 if self.clslew.get() == 1:
@@ -274,9 +266,13 @@ class imagescheduler(object):
                 skyx.takeimages(texp, tnum)
                 log.info("All images completed.")
             except SkyxConnectionError as e:
+                log.error(e)
                 tkinter.messagebox.showinfo(message=e)
                 break
-            
+            except Exception as e:
+                log.error(e)
+                raise(e)
+
     def _checkHandler(self):
         try:
             fails = self._check()
@@ -294,7 +290,7 @@ class imagescheduler(object):
         ''' Call TheSkyX autoguider calibration routine
         '''
         pass
-    
+
     def _check(self):
         ''' Simple check to see that the altitude of the targets is >10 deg
         '''
@@ -305,12 +301,11 @@ class imagescheduler(object):
             tname = self.ttree.item(target)['values'][0]
             alt = self.ttree.item(target)['values'][5]
             ra = self.ttree.item(target)['values'][3]
-            if float(alt) < 10:
-                msg = msg + self.ttree.item(target)['values'][0] + "- below horizon\n"           
+            if float(alt) < 7:
+                msg = msg + self.ttree.item(target)['values'][0] + "- below horizon\n"
             elif ra == None:
-                msg = msg + self.ttree.item(target)['values'][0] + "- no RA\n"           
-        return(msg)
-        
+                msg = msg + self.ttree.item(target)['values'][0] + "- no RA\n"
+        return (msg)
 
     def _updatePositionHandler(self, *args):
         ''' Update the positions of our Minor Planets and if necessary from
@@ -321,7 +316,7 @@ class imagescheduler(object):
         self._updatepositions()
 
     def _updatepositions(self):
-        
+
         for target in self.neoobj.neocplist:
             # target.updateskyxinfo()
             # TODO we should only get the new data on a per object level
@@ -396,15 +391,16 @@ class imagescheduler(object):
                      command=lambda col=col: self.sortby(tree,
                                                          col,
                                                          int(not descending)))
-        
+
     def _updateskyx(self, target):
         skyx = SkyXConnection()
         info = skyx.sky6ObjectInformation(target)
-        return(info['sk6ObjInfoProp_RA_2000'], info['sk6ObjInfoProp_DEC_2000'],
-               info['sk6ObjInfoProp_ALT'], info['sk6ObjInfoProp_AZM'])
+        return (info['sk6ObjInfoProp_RA_2000'], info['sk6ObjInfoProp_DEC_2000'],
+                info['sk6ObjInfoProp_ALT'], info['sk6ObjInfoProp_AZM'])
+
 
 def rafloat2rahours(f):
-    m,h =  math.modf(f)
-    s,m = math.modf(m*60)
-    s = math.modf(s*60)[1]
+    m, h = math.modf(f)
+    s, m = math.modf(m * 60)
+    s = math.modf(s * 60)[1]
     return (str(int(h)) + ":" + str(int(m)) + ":" + str((s)))

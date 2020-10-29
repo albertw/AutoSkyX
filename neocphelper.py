@@ -1,15 +1,18 @@
 """ Module for neocp help notebook
 """
 
-from tkinter import StringVar, N, S, E, W, LEFT
 import datetime
 import logging
 import time
-from tkinter.filedialog import asksaveasfilename
 import tkinter.font
 import tkinter.messagebox
 import tkinter.ttk
-import urllib.request, urllib.error, urllib.parse
+import urllib.error
+import urllib.parse
+import urllib.request
+from os import path
+from tkinter import StringVar, N, S, E, W, LEFT
+from tkinter.filedialog import asksaveasfilename
 
 import ephem
 
@@ -17,6 +20,7 @@ import MPCweb
 
 log = logging.getLogger(__name__)
 
+appdatadir = path.expandvars(r'%LOCALAPPDATA%\AutoSkyX')
 
 class neocp(object):
     """ Class for the neocp helper notebook
@@ -124,6 +128,7 @@ class neocp(object):
                 self.neocptree.delete(item)
             for item in self.neocplist:
                 self.neocptree.insert('', 'end', values=item.neolist())
+            self.updatepositionsHandler()
         except urllib.error.URLError as errmsg:
             mesg = "Can't get NEOCP data:\n" + str(errmsg) + \
                    "\n Check you are online."
@@ -157,7 +162,12 @@ class neocp(object):
                 for child in tree.get_children('')]
 
         # reorder data
-        data.sort(reverse=descending)
+        try:
+            # Try and sort as integers first and if not fallback to
+            # regular sorting
+            data.sort(reverse=descending, key=lambda x: int(x[0]))
+        except ValueError:
+            data.sort(reverse=descending)
         for indx, item in enumerate(data):
             tree.move(item[1], '', indx)
 
@@ -188,7 +198,8 @@ class neocp(object):
         """
         try:
             mpc = MPCweb.MPCweb()
-            self.smalldb = mpc.gen_smalldb(self.neocplist)
+            self.smalldb = mpc.gen_smalldb(self.neocplist, download=True)
+            self.updatepositionsHandler()
         except urllib.error.URLError as errmsg:
             mesg = "Can't get orbit data:\n" + str(errmsg) + \
                    "\n Check you are online."
@@ -239,7 +250,6 @@ class neocp(object):
         for item in self.neocplist:
             self.neocptree.insert('', 'end', values=item.neolist())
 
-
     def updatepositionsHandler(self):
         """ Handler to update the positions of the targets for the selected
             time. Downloading orbit data if necessary.
@@ -252,7 +262,8 @@ class neocp(object):
             tkinter.messagebox.showerror(title="Date Error", message=mesg)
             return
         mpc = MPCweb.MPCweb()
-        self.smalldb = mpc.gen_smalldb(self.neocplist)
+        #self.smalldb = mpc.gen_smalldb(self.neocplist)
+        mpc.updatefromcache(self.neocplist)
         for target in self.neocplist:
             # target.updateskyxinfo()
             # TODO we should only get the new data on a per object level

@@ -38,8 +38,8 @@ class TestMPCWeb(unittest.TestCase):
     def setUp(self):
         # TODO fix these paths
         if os.name == 'nt':
-            ncp="file://" + "/Users\Albert\workspace\AutoSkyX" + "\\test_data\\neocp.txt"
-            cl="file://" + "/Users\Albert\workspace\AutoSkyX" + "\\test_data\\Soft06CritList.txt"
+            ncp="file://" + "/Users\ALBWHITE\PycharmProjects\AutoSkyX" + "\\test_data\\neocp.txt"
+            cl="file://" + "/Users\ALBWHITE\PycharmProjects\AutoSkyX" + "\\test_data\\Soft06CritList.txt"
         else:
             ncp=os.getcwd() + "/neocp.txt"
             cl=os.getcwd() + "/Soft06CritList.txt"
@@ -162,7 +162,7 @@ Date       UT   *  R.A. (J2000) Decl.  Elong.  V        Motion     Object     Su
     #        verify against skyx
 if __name__ == '__main__':
     
-    if platform.architecture()[0] == '64bit':
-        print("We can't run on 64bit sorry")
-        sys.exit(1)
+    #if platform.architecture()[0] == '64bit':
+    #    print("We can't run on 64bit sorry")
+    #    sys.exit(1)
     unittest.main()
