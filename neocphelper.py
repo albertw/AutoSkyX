@@ -105,14 +105,20 @@ class neocp(object):
         self.timestring.set(now.isoformat().replace('T', ' '))
         timeentry = tkinter.ttk.Entry(self.content, textvariable=self.timestring)
         timeentry.grid(column=1, row=1, sticky=(E))
-
+        timenow = tkinter.ttk.Button(self.content, text="Now",
+                                     command=self.timenow)
+        timenow.grid(column=2, row=1, sticky=(E))
         delrows = tkinter.ttk.Button(self.content, text="Delete rows",
                                      command=self.deleteRowsHandler)
-        delrows.grid(column=2, row=1, sticky=(E))
+        delrows.grid(column=3, row=1, sticky=(E))
         delall = tkinter.ttk.Button(self.content, text="Delete all",
                                     command=self.deleteAllHandler)
-        delall.grid(column=3, row=1, sticky=(E))
+        delall.grid(column=4, row=1, sticky=(E))
         self.neocptree.grid(column=0, row=0, sticky=(N, W, E, S))
+
+    def timenow(self):
+        now = datetime.datetime.fromtimestamp(round(time.time()))
+        self.timestring.set(now.isoformat().replace('T', ' '))
 
     def getNeocpHandler(self):
         """ Handler to download the list of objects from the NEOCP and display
